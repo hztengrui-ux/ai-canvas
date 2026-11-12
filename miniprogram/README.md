@@ -46,7 +46,7 @@ miniprogram/
 
 ## 三、在微信开发者工具里从零跑起来（5 步）
 
-1. 打开微信开发者工具 →「+」→ **导入项目**，目录选 `E:\DSH项目\ai-canvas\miniprogram`
+1. 打开微信开发者工具 →「+」→ **导入项目**，目录选 `<你的项目目录>\ai-canvas\miniprogram`
    （就选这一层，不要再往里套）。
 2. AppID 选**测试号**（或游客模式）。`project.config.json` 已写 `"appid": "touristappid"`，不需要真 AppID。
 3. 右上角「详情」→「本地设置」→ 勾选 **「不校验合法域名、web-view（业务域名）、TLS 版本以及 HTTPS 证书」**。
