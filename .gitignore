@@ -38,3 +38,24 @@ scripts/_removed-probe.mjs.bak
 
 .DS_Store
 Thumbs.db
+
+# ------------------------------------------------------------------
+# 公开仓库不收录内部资料（本地文件保留，只是不入 git）
+#   · 验收报告与截图、接口文档、设计提案、原型、设计系统说明
+#   · 内部开发文档（编号 4~15 的执行文档、技术总文档、使用说明、竞品拆解等）
+# 需要的话把 .gitignore 里这几行删掉即可恢复跟踪。
+# ------------------------------------------------------------------
+/reports/
+/docs/
+/design-proposals/
+/design-system/
+/prototypes/
+/使用说明.md
+/使用说明-DSH.md
+/设计规范.md
+/DESIGN-AUDIT.md
+/design-refresh-report.md
+/REFERENCE_ANALYSIS.md
+/REFERENCE_FEATURES.md
+/跨多多AI创作台-完整技术总文档.md
+/[0-9]*-*.md

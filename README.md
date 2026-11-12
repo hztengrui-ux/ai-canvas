@@ -1,62 +1,117 @@
-# AI Canvas · 无限画布创作台
+# 跨多多 AI 创作台（ai-canvas）
 
-对标 "AI Change" 架构的自研第一版：**Vue 3 + Element Plus** 前端 + **Express 本地后端**，生成能力三路全接：
+无限画布式的 AI 电商视觉创作台：一张画布上完成「商品图 → 参考图 → 出图 → 批量 → 审核」，
+后端在本机或服务器上代调各家图像模型（通义万相 / 即梦 Seedream / OpenAI GPT Image / Gemini Nano Banana / 本地 ComfyUI），
+前端 Vue 3 + Element Plus，桌面端 Electron。
 
-- **通义万相**（阿里云百炼 DashScope，wanx2.1 系列，异步任务轮询）
-- **即梦 / Seedream**（火山方舟 Ark Images API，doubao-seedream 系列）
-- **ComfyUI 本地工作流**（自动发现 checkpoint，标准 SD 文生图，历史轮询取图）
+![无限画布](assets/screenshot-canvas.png)
 
 ## 功能
 
-- 无限画布：滚轮缩放（围绕光标）、空白拖拽平移、卡片拖动、Delete 删除、缩放 HUD
-- 拖入本地图片直接上画布（自动按宽高比排版）
-- 生成面板：提示词 / 负面词 / 尺寸 / 张数（1-4），ComfyUI 额外支持步数与 CFG
-- SSE 流式进度（排队 → 生成中 → 落画布），占位卡片实时更新
-- 所有产出自动落地 `outputs/`，避免远程 URL 过期
-- 设置抽屉：三路 Key/地址/模型，保存于 `~/.ai-canvas/config.json`（仅本机）
+- **无限画布**：节点式工作流（商品图 / 参考图 / 画面描述 / 执行 / 生成结果），缩放、拖拽、框选、多选、复制粘贴、撤销重做
+- **技能库**：模特换装 / 风格换装 / 姿势裂变 / 白底图 / 详情页 / 视频等预设工作流，一键铺图
+- **批量工作台**：文件夹批量出图、变量命名（`{文件名}`、`{序号}` 等）、断点续跑、失败重试
+- **多模型接入**：通义万相、火山方舟 Seedream、OpenAI GPT Image、Gemini Nano Banana、ComfyUI 本地工作流
+- **模型 API 自检**：设置页一键测试 Key / 地址 / 模型是否可用，不生成图片、不扣算力
+- **账号与算力**：本地账号体系（scrypt）、角色权限、算力账本（预留 / 结算 / 退款）、充值订单与回调验签
+- **运营后台**：账号、部门、角色、审计日志、密钥管理、充值/支付管理
+- **手机端**：微信小程序（看图 / 出图 / 进度 / 账号），局域网联调
+- **桌面端**：Electron 壳、系统托盘、自动更新（electron-updater）、免安装绿色版
 
-## 运行
+![工作台](assets/screenshot-home.png)
+
+## 技术栈
+
+| 层 | 选型 |
+|---|---|
+| 前端 | Vue 3 + Vite 6 + Element Plus + @vue-flow/* |
+| 后端 | Node.js 20 + Express 4（本地/服务器同构） |
+| 桌面 | Electron 33 + electron-builder |
+| 数据 | JSON 文件（单机模式，`AI_CANVAS_HOME`）；密钥走系统钥匙串或本地加密文件 |
+| 测试 | 自研 `scripts/run-tests.mjs`，39 套端到端/单元用例 |
+
+## 目录结构
+
+```
+src/                 Vue 3 前端（components 画布/技能/批量/后台，store 状态）
+server/              Express 后端（账号、算力、支付、模型网关、provider 适配、API 自检）
+electron/            桌面壳（main / preload / tray / updater）
+miniprogram/         微信小程序
+scripts/             构建、测试、打包、品牌配置等脚本
+deploy/              Docker / Compose / Caddy 部署骨架
+public/              运行时静态资源（模板图、品牌素材）
+assets/              README 截图
+```
+
+## 快速开始（开发模式）
+
+前置：Node.js ≥ 20、Windows 10/11（其他平台未验证）。
 
 ```bash
 npm install
-npm run build      # 构建前端
-npm run server     # 启动后端 http://127.0.0.1:5181（同时服务前端产物）
+
+# 一条命令起「后端 5181 + Vite 5180 + Electron 开发态」
+npm run dev:desktop
+
+# 状态 / 停止
+npm run dev:status
+npm run dev:stop
 ```
 
-开发模式（两个终端）：
+打开后按首屏引导创建管理员账号，登录进工作台。
+右上角「设置」里填各模型的 API Key，点「测试连接」确认连通（自检不扣算力）。
+
+> 只想用浏览器版：`npm run dev`（Vite）+ 另开一个终端 `npm run server`，访问 `http://127.0.0.1:5180`。
+
+## 生产运行
 
 ```bash
-npm run dev        # Vite http://localhost:5180，/api 代理到 5181
-npm run server
+npm run build        # 构建前端到 dist/
+npm run server       # 后端 + 静态站点，默认 http://127.0.0.1:5181
 ```
 
-## 各提供方准备
+Docker 部署见 [`deploy/README.md`](deploy/README.md)（Caddy 自动 HTTPS、数据卷、备份与三个已知坑）。
 
-| 提供方 | 需要什么 | 获取方式 |
-|---|---|---|
-| 通义万相 | DashScope API Key（sk-...） | 阿里云百炼控制台 → API-KEY |
-| 即梦/Seedream | 火山方舟 API Key | 火山引擎控制台 → 方舟 → 开通 doubao-seedream 模型 |
-| ComfyUI | 本地跑起的 ComfyUI（默认 127.0.0.1:8188） | `python main.py` 启动即可，至少放一个 checkpoint 到 models/checkpoints |
+## 桌面端打包
 
-首次使用点右上角「设置」填 Key；ComfyUI 只需本机在跑，点「测试」即可发现模型。
-
-## 架构
-
-```
-src/                     Vue3 + Element Plus（Vite）
-  components/InfiniteCanvas.vue   自研无限画布引擎（transform+scale，无第三方画布库）
-  components/PromptPanel.vue      生成面板 + SSE 进度
-  components/SettingsDialog.vue   三路配置
-server/
-  index.js              Express：/api/generate(SSE) /api/settings /api/upload /outputs
-  providers/            wanxiang.js / jiemeng.js / comfyui.js 各自独立
-  config.js             ~/.ai-canvas/config.json 读写（Key 掩码回显）
+```bash
+npm run dist         # 安装包 + 免安装版（electron-builder）
+npm run portable     # 免安装版 + 校验
 ```
 
-## 路线图（下一版候选）
+产物在 `release/`（已 gitignore）。当前构建**未做代码签名**，Windows SmartScreen 会提示未知发布者。
 
-- 图片卡右键菜单：设为参考图（图生图）、下载、删除
-- ComfyUI 自定义工作流模板上传（JSON）
-- 画布项目持久化（保存/恢复布局）
-- 批量任务队列与并行 fan-out
-- 接入你的图像资产提取管线（左侧资产栏拖拽上布）
+## 环境变量
+
+| 变量 | 说明 |
+|---|---|
+| `AI_CANVAS_HOME` | 数据根（账号、算力账本、配置、输出、素材） |
+| `AI_CANVAS_OUTPUTS` / `AI_CANVAS_MATERIALS` | 产出 / 素材目录，默认在数据根下 |
+| `AI_CANVAS_VAULT` | `file` = 强制用本地加密文件存密钥（默认优先系统钥匙串） |
+| `PORT` / `AI_CANVAS_BIND` | 后端端口 / 监听地址（容器部署设 `0.0.0.0`） |
+| `BRAND` | 白标品牌键（`aichange` / `jingling` / `xmulo` / 自定义） |
+
+## 测试
+
+```bash
+npm test
+```
+
+覆盖算力账本、支付回调、模型网关、prompt 编译、技能库、画布剪贴板、API 自检、手机端接口等 39 套用例。
+
+## 数据与安全
+
+- 默认单机运行：数据与密钥都在本机（`AI_CANVAS_HOME`），不上传云端
+- 厂商 API Key 存在系统钥匙串（不可用时退化为本地加密文件），**不进仓库、不回显**
+- 仓库里没有真实 Key / 账号 / 数据库
+
+## 已知限制
+
+- 目前主要面向 Windows；其他平台需自行验证
+- 未做代码签名；未声明开源许可证（默认保留所有权利，如需开源请补 LICENSE）
+- 多租户 / 云端同步尚未实现：当前是「单机后端 + 桌面/浏览器/小程序多端接入」
+
+## 相关
+
+- 部署：[`deploy/README.md`](deploy/README.md)
+- 发布与下载：见 GitHub Releases
