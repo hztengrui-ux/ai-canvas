@@ -1,0 +1,123 @@
+<view class="page page-with-bar">
+  <view class="h1">出图</view>
+  <view class="muted small create-sub">写下想要的画面，服务端会按账号权限与算力排队生成</view>
+
+  <view wx:if="{{loading}}" class="card mt-24">
+    <view class="empty">正在读取可用能力…</view>
+  </view>
+
+  <view wx:elif="{{loadError}}" class="card mt-24">
+    <view class="h3">读取失败</view>
+    <view class="muted small mt-8">{{loadError}}</view>
+    <button class="btn btn-ghost btn-sm mt-16" bindtap="loadBootstrap">重试</button>
+  </view>
+
+  <block wx:else>
+    <view class="section-head">
+      <view class="h3">技能</view>
+      <text class="muted tiny">来自 /api/m/bootstrap</text>
+    </view>
+    <view class="chips">
+      <view
+        class="chip {{skillId === item.id ? 'on' : ''}} {{item.available ? '' : 'off'}}"
+        wx:for="{{skills}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        bindtap="onSkill"
+      >{{item.label}}</view>
+    </view>
+    <view wx:if="{{skillDesc}}" class="skill-desc">{{skillDesc}}</view>
+
+    <view class="section-head">
+      <view class="h3">模型</view>
+      <text class="muted tiny">可选</text>
+    </view>
+    <scroll-view class="chip-scroll" scroll-x="{{true}}">
+      <view class="chips chips-nowrap">
+        <view
+          class="chip {{modelId === item.id ? 'on' : ''}}"
+          wx:for="{{models}}"
+          wx:key="id"
+          data-id="{{item.id}}"
+          bindtap="onModel"
+        >{{item.label}}</view>
+      </view>
+    </scroll-view>
+    <view wx:if="{{!models.length}}" class="muted tiny model-empty">服务端未返回可用模型，将使用默认模型</view>
+
+    <view class="section-head">
+      <view class="h3">提示词</view>
+      <text class="muted tiny">{{prompt.length}}/1000</text>
+    </view>
+    <view class="card prompt-card">
+      <textarea
+        class="textarea prompt-input"
+        value="{{prompt}}"
+        maxlength="1000"
+        placeholder="例：杏色圆领毛衫，胸前小面积抽象印花，柔和棚拍光，浅灰背景"
+        placeholder-class="input-ph"
+        bindinput="onPrompt"
+        show-confirm-bar="{{false}}"
+      ></textarea>
+    </view>
+
+    <view class="section-head">
+      <view class="h3">参考图</view>
+      <text class="muted tiny">可选 · 最多 3 张</text>
+    </view>
+    <view class="ref-grid">
+      <view
+        class="ref-item"
+        wx:for="{{refs}}"
+        wx:key="url"
+        data-url="{{item.url}}"
+        bindtap="previewRef"
+      >
+        <image class="ref-img" src="{{item.fullUrl}}" mode="aspectFill"></image>
+        <view class="ref-del" catchtap="removeRef" data-url="{{item.url}}">×</view>
+      </view>
+      <view wx:if="{{refs.length < 3}}" class="ref-add" bindtap="chooseRef">
+        <text class="ref-add-icon">＋</text>
+        <text class="tiny muted">{{uploading ? '上传中…' : '添加'}}</text>
+      </view>
+    </view>
+    <view class="muted tiny mt-8 ref-hint">参考图会先上传到服务端，再作为图生图输入随任务提交。</view>
+
+    <view class="section-head">
+      <view class="h3">张数</view>
+      <text class="muted tiny">1–4 张</text>
+    </view>
+    <view class="chips">
+      <view
+        class="chip n-chip {{n === item ? 'on' : ''}}"
+        wx:for="{{nList}}"
+        wx:key="*this"
+        data-n="{{item}}"
+        bindtap="onCount"
+      >{{item}}</view>
+    </view>
+
+    <view class="card cost-card mt-24">
+      <view class="row between">
+        <text class="muted small">本次消耗</text>
+        <text class="cost-num">{{costText}}</text>
+      </view>
+      <view class="row between mt-8">
+        <text class="muted tiny">当前余额</text>
+        <text class="small ink">{{balance}} {{creditName}}</text>
+      </view>
+    </view>
+  </block>
+
+  <view class="bottom-bar">
+    <view class="col flex-1">
+      <text class="tiny muted">{{n}} 张 · {{costText}}</text>
+      <text class="tiny balance-mini">余额 {{balance}} {{creditName}}</text>
+    </view>
+    <button
+      class="btn btn-primary submit-btn {{submitting ? 'is-busy' : ''}}"
+      bindtap="submit"
+      hover-class="none"
+    >{{submitting ? '提交中…' : '立即生成'}}</button>
+  </view>
+</view>

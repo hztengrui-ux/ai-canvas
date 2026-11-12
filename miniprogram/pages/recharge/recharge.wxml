@@ -1,0 +1,160 @@
+<view class="page {{currentOrder ? '' : 'page-with-bar'}}">
+  <view wx:if="{{!initialized && !error}}" class="card mt-24">
+    <view class="empty">正在读取充值信息…</view>
+  </view>
+
+  <view wx:if="{{!initialized && error}}" class="card mt-24">
+    <view class="h3">充值信息加载失败</view>
+    <view class="muted small mt-8">{{error}}</view>
+    <button class="btn btn-ghost btn-sm mt-16" bindtap="reload">重试</button>
+  </view>
+
+  <block wx:if="{{initialized}}">
+    <view wx:if="{{error}}" class="card err-banner mt-16">
+      <text class="small danger-text">{{error}}</text>
+    </view>
+
+    <view class="card-dark recharge-balance">
+      <view class="row between">
+        <view class="col">
+          <view class="balance-label">当前余额</view>
+          <view class="balance-row">
+            <text class="balance-num">{{balance}}</text>
+            <text class="balance-unit">{{creditName}}</text>
+          </view>
+        </view>
+        <view class="balance-ring"></view>
+      </view>
+      <view class="balance-foot">充值到账后与电脑端共用同一份算力账本。</view>
+    </view>
+
+    <view class="card notice-card mt-24 {{status.sandbox ? 'notice-sandbox' : 'notice-real'}}">
+      <view class="row between">
+        <view class="h3">{{status.sandbox ? '沙箱模式' : '真实支付未接入'}}</view>
+        <view class="tag {{status.sandbox ? 'tag-lime' : 'tag-brand'}}">{{status.sandbox ? 'sandbox' : (status.mode || '未配置')}}</view>
+      </view>
+      <view class="small sub mt-8 notice-text">{{noticeText}}</view>
+      <view wx:if="{{serverHint}}" class="muted tiny mt-8">服务端说明：{{serverHint}}</view>
+    </view>
+
+    <view wx:if="{{currentOrder}}" class="card order-panel mt-24">
+      <view class="row between">
+        <view class="h3">待支付订单</view>
+        <view class="tag warn">待支付</view>
+      </view>
+      <view class="order-line row between mt-16">
+        <text class="muted small">套餐</text>
+        <text class="small ink">{{currentOrder.planLabel}}</text>
+      </view>
+      <view class="order-line row between mt-8">
+        <text class="muted small">金额</text>
+        <text class="small ink">¥{{currentOrder.priceText}}</text>
+      </view>
+      <view class="order-line row between mt-8">
+        <text class="muted small">到账</text>
+        <text class="small ink">{{currentOrder.total}} {{creditName}}</text>
+      </view>
+      <view class="order-line row between mt-8">
+        <text class="muted small">订单号</text>
+        <text class="tiny ink order-id">{{currentOrder.id}}</text>
+      </view>
+
+      <view wx:if="{{status.sandbox}}" class="sandbox-box mt-16">
+        <view class="muted tiny">沙箱模式：不会产生真实扣款，点下面按钮即刻到账。</view>
+        <button
+          class="btn btn-primary btn-block mt-16 {{simulating ? 'is-busy' : ''}}"
+          bindtap="simulatePaid"
+          hover-class="none"
+        >{{simulating ? '处理中…' : '模拟支付（沙箱）'}}</button>
+        <view class="row mt-16">
+          <button class="btn btn-ghost btn-sm" bindtap="cancelCurrentOrder">取消订单</button>
+          <button class="btn btn-ghost btn-sm ml-16" bindtap="refreshOrders">刷新订单状态</button>
+        </view>
+      </view>
+
+      <view wx:else class="real-box mt-16">
+        <view wx:if="{{payError}}" class="pay-error">{{payError}}</view>
+        <view wx:if="{{paying}}" class="muted tiny">正在向服务端发起支付…</view>
+        <view wx:if="{{payMessage}}" class="small sub mt-8">{{payMessage}}</view>
+        <view class="small sub mt-8">请到电脑端完成支付，小程序内不会调起微信支付。</view>
+        <view class="muted tiny mt-8">订单号：{{currentOrder.id}}（对账用）</view>
+        <view class="row mt-16">
+          <button class="btn btn-primary btn-sm {{paying ? 'is-busy' : ''}}" bindtap="retryPay">重新发起支付</button>
+          <button class="btn btn-ghost btn-sm ml-16 {{cancelingId ? 'is-busy' : ''}}" bindtap="cancelCurrentOrder">取消订单</button>
+        </view>
+      </view>
+    </view>
+
+    <view class="section-head">
+      <view class="h3">充值套餐</view>
+      <text class="muted tiny">价格与算力以服务端为准</text>
+    </view>
+    <view wx:if="{{!plans.length}}" class="card">
+      <view class="empty">服务端没有可售套餐</view>
+    </view>
+    <view wx:else class="plan-grid">
+      <view
+        class="plan-card {{selectedPlanId === item.id ? 'on' : ''}}"
+        wx:for="{{plans}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        bindtap="onSelectPlan"
+      >
+        <view wx:if="{{item.hot}}" class="hot-badge">HOT</view>
+        <view class="plan-label">{{item.label}}</view>
+        <view class="plan-price">
+          <text class="plan-currency">¥</text>
+          <text class="plan-price-num">{{item.priceText}}</text>
+        </view>
+        <view class="plan-total">{{item.total}} {{creditName}}</view>
+        <view class="plan-sub">{{item.bonusText}}</view>
+        <view wx:if="{{selectedPlanId === item.id}}" class="plan-check">✓ 已选</view>
+      </view>
+    </view>
+
+    <view class="section-head">
+      <view class="h3">最近订单</view>
+      <text class="muted tiny">最多 10 单</text>
+    </view>
+    <view wx:if="{{orders.length}}" class="card order-list">
+      <view class="order-row" wx:for="{{orders}}" wx:key="id">
+        <view class="row between">
+          <view class="col flex-1 order-main">
+            <view class="row wrap order-title-row">
+              <text class="order-plan">{{item.planLabel}}</text>
+              <view class="tag {{item.statusClass}} order-tag">{{item.statusText}}</view>
+            </view>
+            <view class="muted tiny mt-4">¥{{item.priceText}} · {{item.total}} 算力 · {{item.createdAtText}}</view>
+            <view wx:if="{{item.status === 'paid' && item.paidAtText}}" class="muted tiny mt-4">到账 {{item.paidAtText}}</view>
+            <view class="muted tiny mt-4 order-id">订单号 {{item.id}}</view>
+          </view>
+          <button
+            wx:if="{{item.status === 'pending'}}"
+            class="btn btn-ghost btn-sm order-cancel {{cancelingId === item.id ? 'is-busy' : ''}}"
+            data-id="{{item.id}}"
+            catchtap="cancelOrder"
+          >{{cancelingId === item.id ? '取消中…' : '取消'}}</button>
+        </view>
+      </view>
+    </view>
+    <view wx:else class="card">
+      <view class="empty">还没有充值订单</view>
+    </view>
+
+    <view class="recharge-foot muted tiny">
+      沙箱订单走的是服务端完整回调链路；配好真实商户号后，小程序内会明确提示到电脑端支付。
+    </view>
+  </block>
+
+  <view class="bottom-bar" wx:if="{{initialized && !currentOrder}}">
+    <view class="col flex-1">
+      <text class="tiny muted">{{selectedSummary}}</text>
+      <text class="tiny balance-mini">{{selectedTotalText}}</text>
+    </view>
+    <button
+      class="btn btn-primary recharge-btn {{creating || !selectedPlanId ? 'is-busy' : ''}}"
+      bindtap="createOrder"
+      hover-class="none"
+    >{{creating ? '创建订单中…' : payButtonText}}</button>
+  </view>
+</view>

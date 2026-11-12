@@ -1,0 +1,54 @@
+<view class="page login-page">
+  <view class="login-hero">
+    <view class="logo-mark">跨</view>
+    <view class="h1 login-title">跨多多 AI 创作台</view>
+    <view class="muted login-sub">手机端 · 棱镜 Prism</view>
+  </view>
+
+  <view class="card login-card">
+    <view class="field">
+      <view class="field-label">账号</view>
+      <input
+        class="input"
+        value="{{username}}"
+        data-field="username"
+        placeholder="请输入账号"
+        placeholder-class="input-ph"
+        confirm-type="next"
+        bindinput="onInput"
+      />
+    </view>
+    <view class="field">
+      <view class="field-label">密码</view>
+      <input
+        class="input"
+        password="{{true}}"
+        value="{{password}}"
+        data-field="password"
+        placeholder="请输入密码"
+        placeholder-class="input-ph"
+        confirm-type="done"
+        bindinput="onInput"
+        bindconfirm="submit"
+      />
+    </view>
+
+    <view wx:if="{{error}}" class="login-error">{{error}}</view>
+
+    <button class="btn btn-primary btn-block login-btn {{loading ? 'is-busy' : ''}}" bindtap="submit" hover-class="none">
+      {{loading ? '登录中…' : '登录'}}
+    </button>
+    <view class="muted tiny login-hint">首次使用请先在电脑端创建管理员账号。</view>
+  </view>
+
+  <view class="login-foot">
+    <view class="row between server-row" bindtap="onServerTap">
+      <text class="muted tiny">服务端地址</text>
+      <view class="row flex-1 server-right">
+        <text class="tiny ink ellipsis login-server">{{baseUrl}}</text>
+        <text class="tiny brand-text server-edit">修改 ›</text>
+      </view>
+    </view>
+    <view class="muted tiny login-tip">手机联调：电脑端用 AI_CANVAS_BIND=0.0.0.0 启动，点上面的地址改成电脑的局域网 IP 再登录。</view>
+  </view>
+</view>

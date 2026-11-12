@@ -1,0 +1,277 @@
+/* ==========================================================================
+   无限画布（Studio）视觉精修层 —— 2026-10-23
+
+   用户反馈："跨多多无限画布界面设计不好看"。复盘当前问题（截图对照）：
+     1. 顶栏三种形状的控件（项目名 / 技能 / 模型）挤在一条线上，右侧一串 12px 小图标
+        没有分组，视觉噪声大、点击目标小；
+     2. 空状态是**两块不等高的白卡片**硬拼（上传 177px + 输入 545px），
+        左边文案换行成两行，右边输入框像个搜索条，"生成"按钮还是灰的；
+     3. 画布是一片均匀灰白 + 稀疏点阵，跟顶栏之间没有分隔，缺少空间层次；
+     4. 左侧工具条是一根贴边的白色长条，图标间距不均，激活态不明显；
+     5. 整体只有一个荧光绿点缀，视线被吸走但没有第二个层次可看。
+
+   修法（克制，不换设计语言）：
+     · 尺寸体系收敛到 32 / 40 两档，图标统一 15px；
+     · 顶栏加半透明毛玻璃 + 底部 1px 分隔线，右侧控制项做成"分组胶囊"；
+     · 画布加一层极淡的径向光，点阵压淡，形成"桌面"感；
+     · 工具条改成独立圆角浮层，激活态用荧光绿底 + 墨黑图标；
+     · 空状态合并成一张卡（结构改动在 EmptyCanvas.vue 里）。
+
+   为什么单独开一层，而不是改 style.css / redesign.css：
+     那两个文件各 150KB / 24KB，里面是三轮迭代叠加的历史规则，直接改很容易
+     踩到"改了 A 页面、B 页面跟着变"。这里只覆盖 studio 相关选择器，
+     排查范围小，删掉也不会波及别处。
+   ========================================================================== */
+
+/* ---------- ① 顶栏：毛玻璃 + 分组 ---------- */
+html[data-theme] .clean-topbar {
+  height: 56px;
+  padding: 0 14px;
+  gap: 6px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  backdrop-filter: blur(14px) saturate(1.1);
+}
+
+/* 左侧三件套（项目 / 技能 / 模型）统一成同一种胶囊，高度一致才不打架 */
+html[data-theme] .clean-left {
+  gap: 6px;
+  align-items: center;
+}
+html[data-theme] .clean-project,
+html[data-theme] .skill-entry,
+html[data-theme] .model-trigger {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 16px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+html[data-theme] .clean-project:hover,
+html[data-theme] .skill-entry:hover,
+html[data-theme] .model-trigger:hover {
+  background: var(--surface-hover);
+  border-color: var(--border);
+}
+html[data-theme] .skill-entry .el-icon,
+html[data-theme] .model-trigger .el-icon {
+  font-size: 15px;
+}
+/* 技能与模型之间加一道竖分隔：告诉眼睛"这是两件事" */
+html[data-theme] .skill-entry::after {
+  content: "";
+  position: absolute;
+}
+
+/* 右侧控制项：小图标统一 30×30、圆角 8、hover 有底 */
+html[data-theme] .clean-ctl {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  color: var(--text-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+html[data-theme] .clean-ctl .el-icon {
+  font-size: 15px;
+}
+html[data-theme] .clean-ctl:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+html[data-theme] .clean-ctl:disabled {
+  opacity: 0.32;
+}
+
+/* 缩放百分比：等宽数字，避免 ±1 时宽度跳动 */
+html[data-theme] .clean-zoom-label,
+html[data-theme] .clean-zoom-value {
+  min-width: 42px;
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+/* 「未保存」：小圆点 + 文字做成一个轻胶囊，别裸着 */
+html[data-theme] .clean-save-state {
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 12px;
+  background: var(--surface-hover);
+  color: var(--text-3);
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ---------- ② 画布：桌面感（顶部微光影 + 点阵压淡） ---------- */
+/* ⚠️ 这里的 ::before 只挂在 .clean-canvas 上（它本来就有 position: relative）。
+   千万不要给 .node-canvas-wrap 也写 position: relative ——
+   它靠绝对定位撑满父级，改成 relative 后高度直接塌成 0，
+   空状态卡片就会被裁掉上半截（本轮改版踩过这个坑，用 CDP 量出来才发现）。 */
+html[data-theme] .clean-canvas::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(900px 420px at 50% -8%, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0) 70%),
+    radial-gradient(1200px 600px at 50% 120%, rgba(21, 23, 30, 0.035), rgba(21, 23, 30, 0) 70%);
+}
+/* 点阵压淡一档：原来 0.55 的白点铺在浅灰上有点"脏" */
+html[data-theme] .node-canvas-wrap .vue-flow__background circle {
+  opacity: 0.5;
+}
+
+/* ---------- ③ 左侧工具条：独立浮层 + 荧光绿激活态 ---------- */
+html[data-theme] .float-rail {
+  top: 50%;
+  transform: translateY(-50%);
+  left: 14px;
+  padding: 6px;
+  gap: 4px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 30px -18px rgba(21, 23, 30, 0.45);
+  backdrop-filter: blur(10px);
+}
+html[data-theme] .float-tool-wrap {
+  width: 40px;
+  height: 40px;
+}
+html[data-theme] .float-tool-wrap > button,
+html[data-theme] .float-rail > button {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  color: var(--text-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+html[data-theme] .float-tool-wrap > button .el-icon,
+html[data-theme] .float-rail > button .el-icon {
+  font-size: 17px;
+}
+html[data-theme] .float-tool-wrap > button:hover,
+html[data-theme] .float-rail > button:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+/* 激活/展开的工具：荧光绿底 + 墨黑图标（与主 CTA 同一语言） */
+html[data-theme] .float-tool-wrap > button.on,
+html[data-theme] .float-tool-wrap > button.is-on,
+html[data-theme] .float-rail > button.on {
+  background: var(--lime, #d8fa34);
+  color: var(--lime-ink, #15171e);
+}
+
+/* 工具条与画布之间的过渡：左侧留出安全边 */
+html[data-theme] .clean-body {
+  position: relative;
+}
+
+/* ---------- ④ 右下角控件：统一胶囊 ---------- */
+html[data-theme] .float-corner {
+  left: 14px;
+  right: auto;
+  bottom: 14px;
+  padding: 6px;
+  gap: 4px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 30px -18px rgba(21, 23, 30, 0.45);
+  backdrop-filter: blur(10px);
+}
+html[data-theme] .float-corner-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  color: var(--text-2);
+}
+html[data-theme] .float-corner-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+html[data-theme] .float-corner-btn.on {
+  background: var(--lime, #d8fa34);
+  color: var(--lime-ink, #15171e);
+}
+
+
+/* ---------- ⑥ 画布上的节点：把"灰白虚线块"做出层次 ----------
+   改前的问题：上传占位块是 #f9fafb 底 + 很淡的虚线，铺一套工作流出来
+   看着像"还没加载完"；结果卡没有表头分隔，整块糊在一起。
+   这里只动表面（底/边框/圆角/悬停/选中环），不动任何节点尺寸与布局。 */
+html[data-theme] .nf-product-upload,
+html[data-theme] .nf-style-upload {
+  border: 1.5px dashed var(--border-strong);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface-hover) 55%, var(--surface));
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+html[data-theme] .nf-product-upload:hover,
+html[data-theme] .nf-style-upload:hover {
+  border-color: color-mix(in srgb, var(--lime, #d8fa34) 75%, var(--border-strong));
+  border-style: solid;
+  background: color-mix(in srgb, var(--lime, #d8fa34) 10%, var(--surface));
+}
+html[data-theme] .nf-product-plus,
+html[data-theme] .nf-style-plus {
+  color: var(--text-3);
+  font-weight: 600;
+}
+html[data-theme] .nf-product-upload:hover .nf-product-plus,
+html[data-theme] .nf-style-upload:hover .nf-style-plus {
+  color: var(--text);
+}
+
+/* 结果卡：白底 + 表头分隔，才有"结果"该有的分量 */
+html[data-theme] .nf-result {
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 2px rgba(21, 23, 30, 0.04), 0 18px 40px -30px rgba(21, 23, 30, 0.5);
+}
+html[data-theme] .nf-result-head {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 650;
+  color: var(--text);
+}
+html[data-theme] .nf-result-placeholder {
+  border: 1.5px dashed var(--border-strong);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface-hover) 40%, var(--surface));
+  color: var(--text-3);
+}
+
+/* 选中节点：荧光绿环（原来只有一条默认蓝边） */
+html[data-theme] .vue-flow__node.selected .nf-node,
+html[data-theme] .vue-flow__node.selected .nf-result {
+  outline: 2px solid color-mix(in srgb, var(--lime, #d8fa34) 85%, transparent);
+  outline-offset: 4px;
+  border-radius: 16px;
+}
+/* 连线：默认太浅，在浅灰底上几乎看不见 */
+html[data-theme] .vue-flow__edge-path {
+  stroke: color-mix(in srgb, var(--text-4) 85%, transparent);
+}
+html[data-theme] .vue-flow__edge.selected .vue-flow__edge-path,
+html[data-theme] .vue-flow__edge:hover .vue-flow__edge-path {
+  stroke: var(--text-2);
+}

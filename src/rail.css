@@ -1,0 +1,93 @@
+/* ============================================================
+   左侧图标轨（参考 LOOM42 的窄轨）
+   折叠 64px 只留图标，悬停展开到 220px 显示文字
+   ============================================================ */
+.sidebar {
+  width: 64px;
+  overflow-x: hidden;
+  transition: width 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sidebar:hover {
+  width: 220px;
+}
+
+/* 展开态：文字不换行 */
+.sidebar-title,
+.sidebar-section-title,
+.sidebar-item-left span,
+.user-info,
+.user-logout {
+  white-space: nowrap;
+}
+
+/* 折叠态：文字直接不占位，保证图标真正居中 */
+.sidebar:not(:hover) .sidebar-title,
+.sidebar:not(:hover) .sidebar-item-left span,
+.sidebar:not(:hover) .user-info,
+.sidebar:not(:hover) .user-logout {
+  display: none;
+}
+
+.sidebar:not(:hover) .sidebar-header,
+.sidebar:not(:hover) .sidebar-item,
+.sidebar:not(:hover) .user-card {
+  justify-content: center;
+}
+
+.sidebar:not(:hover) .sidebar-item-left {
+  gap: 0;
+}
+
+.sidebar:not(:hover) .sidebar-item {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.sidebar:not(:hover) .sidebar-header {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* 分组标题折叠时收成一条细分隔线 */
+.sidebar-section-title {
+  transition: margin 0.2s ease, padding 0.2s ease;
+}
+
+.sidebar:not(:hover) .sidebar-section-title {
+  height: 1px;
+  margin: 12px 16px;
+  padding: 0;
+  font-size: 0;
+  line-height: 0;
+  background: var(--sidebar-border);
+  overflow: hidden;
+}
+
+/* 图标在窄轨里单独放大一点，避免显得空 */
+.sidebar:not(:hover) .sidebar-item-left .el-icon {
+  font-size: 17px;
+}
+
+.sidebar-item-left .el-icon {
+  transition: font-size 0.2s ease;
+}
+
+/* 折叠时给一层底色，和主区拉开层次 */
+.sidebar {
+  border-right: 1px solid transparent;
+}
+
+.sidebar:not(:hover) {
+  border-right-color: var(--sidebar-border);
+}
+
+/* 窄轨里的滚动条收细 */
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}

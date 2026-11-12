@@ -1,0 +1,40 @@
+node_modules/
+dist/
+release/
+outputs/
+
+# 本地运行数据与日志
+*.log
+.workbuddy/
+
+# 测试产生的临时数据目录（隔离用，跑完即弃）
+.testdata/
+.testdata-srv/
+__probe.mjs
+
+# DSH 沙箱环境：必须落在工作区内的缓存与运行数据（否则沙箱拒绝写用户目录）
+.npm-cache/
+.electron-cache/
+.tmp/
+.rundata/
+.rundata-opt/
+.verifydata/
+.verifydata-*/
+.devprofile/
+.devprofile-*/
+
+# 归档的旧打包产物（release 的上一版，体积 90MB+，不入库）
+release-archive/
+
+# 部署时本机填的真实环境变量（只提交 .env.example）
+deploy/.env
+
+# 2026-10-15 清理归档（保留以便追溯 / 重新生成，但不参与构建与提交）
+#   _template-src/            11 张模板示意图的原始 PNG 源图（12.11MB）从 public/ 移到这里
+#   scripts/_removed-*.bak    被删除的危险脚本与死代码备份
+_template-src/
+scripts/_removed-deprecated/
+scripts/_removed-probe.mjs.bak
+
+.DS_Store
+Thumbs.db

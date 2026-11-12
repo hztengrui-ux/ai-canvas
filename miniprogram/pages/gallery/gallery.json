@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "看图",
+  "navigationBarBackgroundColor": "#ECEFF9",
+  "navigationBarTextStyle": "black",
+  "backgroundColor": "#ECEFF9",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark",
+  "onReachBottomDistance": 120
+}

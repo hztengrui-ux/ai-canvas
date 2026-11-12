@@ -1,0 +1,42 @@
+# 阶段 0：单实例可部署（数据仍在数据卷上，多租户/Postgres 在阶段 1-2）
+# 用法：
+#   cd ai-canvas
+#   npm run build                       # 先生成 dist（镜像里要 COPY dist）
+#   cp deploy/.env.example deploy/.env  # 填域名
+#   docker compose -f deploy/docker-compose.yml up -d --build
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: ai-canvas-api:0.2.0
+    restart: unless-stopped
+    # ⚠️ 必须固定 hostname：vault 的加密密钥由 os.hostname() + salt 派生（server/vault.js:102），
+    #    hostname 变化 = 已保存的厂商 Key 全部解不开。
+    hostname: ai-canvas
+    env_file:
+      - .env
+    volumes:
+      - appdata:/data
+    expose:
+      - "5181"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  appdata:
+  caddy_data:
+  caddy_config:

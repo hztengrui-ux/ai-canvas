@@ -1,0 +1,242 @@
+/* ==========================================================================
+   Prism 棱镜 · 表面层（2026-10-17）
+   --------------------------------------------------------------------------
+   为什么单独一个文件，而不是继续往 themes.css 里塞：
+   themes.css 在 main.js 里排在 redesign.css **之前**，
+   而 redesign.css 里已经有一批 `html[data-theme] .topbar` 这类同特异性的规则。
+   主题块里写的表面样式会被 redesign 盖掉（同特异性、后写的赢）。
+   所以：
+     · themes.css  → 只放 token（颜色/圆角/阴影），测试逐项断言的就是它
+     · prism.css   → 放「只有这套主题才要」的表面规则，必须排在 redesign 之后
+   加载顺序（main.js）：… → themes.css → redesign.css → prism.css → responsive.css
+
+   设计对照（用户给的运营分析稿）：
+     1. 满幅雾霭蓝紫底，卡片浮在上面 —— 不是白底 + 灰边框那种后台感
+     2. 导航是白色药丸，当前项是**柠檬绿药丸 + 墨黑字**，一眼定位
+     3. 主 CTA 柠檬绿 + 墨黑字（不是白字，白字在亮绿上根本读不出来）
+     4. 大圆角 + 环境光阴影（token 已在 themes.css 里）
+   ========================================================================== */
+
+/* ---------- 1. 页面底色：三层叠出来的雾霭，不是一块死色 ---------- */
+html[data-theme="prism"] .app-shell {
+  background-color: var(--bg);
+  background-image: var(--page-grad);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  /* 用 scroll 而不是 fixed：fixed 在内容高度大于视口时，背景按元素高度裁、
+     却钉在视口上，滚动中会看到渐变"错位"。渐变本身很淡，scroll 完全够用。 */
+  background-attachment: scroll;
+}
+
+/* 顶栏透明化：让底色一路透到窗口最上面，才有「满幅」的感觉。
+   参考稿的顶栏本身没有白底 —— 白的是里面那颗导航药丸。 */
+html[data-theme="prism"] .topbar {
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  box-shadow: none;
+}
+
+/* ---------- 2. 导航药丸：白玻璃 + 柠檬绿当前项 ---------- */
+html[data-theme="prism"] .topnav {
+  padding: 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 90%, transparent);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px) saturate(1.25);
+  -webkit-backdrop-filter: blur(10px) saturate(1.25);
+}
+
+html[data-theme="prism"] .topnav-item {
+  border-radius: 999px;
+  font-weight: 550;
+}
+
+html[data-theme="prism"] .topnav-item:hover:not(.on) {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+/* 招牌：当前项 = 柠檬绿药丸 + 墨黑字。
+   绿是浅色块，字必须是深色；用 --surface（白/深）当字色会在暗色主题下
+   变成「绿底白字」，对比度只有 1.4:1，等于看不见。 */
+html[data-theme="prism"] .topnav-item.on {
+  background: var(--lime);
+  color: var(--lime-ink);
+  font-weight: 650;
+  box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--lime-deep) 85%, transparent);
+}
+html[data-theme="prism"] .topnav-item.on .el-icon {
+  color: var(--lime-ink);
+}
+
+/* ---------- 3. 主 CTA：柠檬绿渐变 + 墨黑字 ---------- */
+/* 只改字色与字重 —— 渐变底由 themes.css 的 --accent-grad 统一给，
+   这样白标换 --accent-grad 时这里不用跟着改。 */
+html[data-theme="prism"] .btn-primary {
+  color: var(--lime-ink);
+  font-weight: 650;
+}
+html[data-theme="prism"] .btn-primary:hover,
+html[data-theme="prism"] .btn-primary:active {
+  color: var(--lime-ink);
+}
+html[data-theme="prism"] .btn-primary .el-icon {
+  color: inherit;
+}
+
+/* ---------- 4. 创作台顶栏（StudioView 的 clean-*）----------
+   这里是白玻璃条，不是透明 —— 它下面直接压着画布，透过去会和网点打架。 */
+html[data-theme="prism"] .clean-topbar {
+  background: var(--glass);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px) saturate(1.3);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3);
+}
+
+/* ---------- 5. 面板与卡片：统一「浮起来」的手感 ---------- */
+html[data-theme="prism"] .app-main {
+  background: transparent;
+}
+
+/* 参考稿里的强调块是墨黑卡 + 亮色数字。redesign.css 已定义 --rd-inv-*，
+   这里只把「浅色主题下的反差」再拉大一档。 */
+html[data-theme="prism"]:not(.dark) .rd-inv,
+html[data-theme="prism"]:not(.dark) .wk-hero-dark {
+  background: var(--ink-panel);
+  color: #f6f8fd;
+}
+
+/* ---------- 5b. 项目卡：占位与"新建"曾经在雾霭底上几乎看不见 ----------
+   .project-card.new 用 1px dashed var(--border)（#E5E9F4）+ 透明底，
+   在 #ECEFF9 的页面上等于没画；缩略图占位字又写死 #D1D5DB。
+   这两处不改，项目页看起来就像"加载失败"。 */
+html[data-theme="prism"] .project-card.new {
+  border: 1px dashed var(--border-strong);
+  background: color-mix(in srgb, var(--surface) 52%, transparent);
+}
+html[data-theme="prism"] .project-card.new:hover {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 5%, var(--surface));
+}
+html[data-theme="prism"] .project-new-icon {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+html[data-theme="prism"] .project-thumb {
+  background: color-mix(in srgb, var(--primary) 6%, var(--surface));
+}
+html[data-theme="prism"] .project-letter {
+  color: color-mix(in srgb, var(--primary) 48%, var(--text-4));
+}
+
+/* 侧栏（若某页面仍在用）：选中项也走柠檬绿，和顶栏保持同一套语义。
+   注意这里不能用 --sidebar-item-active —— 那是深色底 token，
+   在墨黑侧栏上放柠檬绿才是参考稿的做法。 */
+html[data-theme="prism"] .sidebar-item.on,
+html[data-theme="prism"] .sidebar-item.active {
+  background: var(--lime);
+  color: var(--lime-ink);
+}
+html[data-theme="prism"] .sidebar-item.on::before,
+html[data-theme="prism"] .sidebar-item.active::before {
+  background: var(--lime-ink);
+}
+html[data-theme="prism"] .sidebar-item.on .el-icon,
+html[data-theme="prism"] .sidebar-item.active .el-icon {
+  color: var(--lime-ink);
+}
+
+/* ---------- 6. 选中态统一：柠檬绿 = 「当前 / 已选」，全站只有一个语义 ----------
+   参考稿里"当前项"永远是柠檬绿药丸。这套主题如果只在顶栏用绿、
+   排序胶囊还是品牌蓝、筛选胶囊还是墨黑，同一个界面里就有三种"选中"，
+   看着就乱。这里把散落在各页的选中态统一过来。 */
+html[data-theme="prism"] .pj-sort-btn.on {
+  background: var(--lime);
+  border-color: transparent;
+  color: var(--lime-ink);
+  font-weight: 650;
+  box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--lime-deep) 85%, transparent);
+}
+
+/* 安全记录页筛选：原样式把选中态写死成 #111827（墨黑），
+   且底是写死的 #fff —— 暗色主题下白胶囊配黑字会很刺眼。 */
+html[data-theme="prism"] .audit-filters button {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text-3);
+}
+html[data-theme="prism"] .audit-filters button.on,
+html[data-theme="prism"] body.dark .audit-filters button.on {
+  background: var(--lime);
+  border-color: transparent;
+  color: var(--lime-ink);
+  font-weight: 650;
+}
+
+/* 分段开关（画布模式 自由/批量 等） */
+html[data-theme="prism"] .mode-switch button.on {
+  background: var(--lime);
+  color: var(--lime-ink);
+  font-weight: 650;
+  box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--lime-deep) 80%, transparent);
+}
+
+/* ---------- 7. 禁用态：别用整体透明度 ----------
+   .ce-go:disabled 原来是 opacity:.45 —— 浅色下只是"浅蓝配白字"，
+   暗色下整块压成 45% 之后，白字和底色差值不到 1.2:1，
+   「生成」按钮看起来就是一块没有字的灰块（已截图确认）。
+   这里改成"灰底 + 可读的灰字"，禁用感还在，但看得清写的是什么。 */
+html[data-theme="prism"] .ce-go:disabled,
+html[data-theme="prism"] .btn-primary:disabled {
+  background: var(--surface-hover);
+  color: var(--text-3);
+  opacity: 1;
+  box-shadow: none;
+  filter: none;
+  cursor: not-allowed;
+}
+
+/* 暗色下导航药丸的底几乎和页面同色，看不到"这是一条导航" */
+html.dark[data-theme="prism"] .topnav {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+}
+
+/* ---------- 8. 焦点环：换成钴蓝（柠檬绿做焦点环在浅底上看不见） ---------- */
+html[data-theme="prism"] {
+  --ring: color-mix(in srgb, var(--primary) 45%, transparent);
+}
+
+/* ---------- 9. 「即将上线」的技能入口：可点、但看得出还没接 ----------
+   以前这些下拉项是 :disabled，浏览器不给 click，于是"点了没反应"。
+   现在改成可点击（点了弹原因 + 替代做法），视觉上仍然区分开：
+   文字降一档、右侧一个小胶囊标签，但**不**做成灰到看不清的禁用态。 */
+html[data-theme="prism"] .el-dropdown-menu__item.skill-entry.is-coming {
+  color: var(--text-3);
+}
+
+html[data-theme="prism"] .el-dropdown-menu__item.skill-entry.is-coming:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--lime) 18%, transparent);
+}
+
+html[data-theme="prism"] .el-dropdown-menu__item.skill-entry.is-coming .topnav-hint {
+  padding: 0 6px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--lime) 30%, transparent);
+  color: var(--lime-ink, #15171e);
+  font-size: 10px;
+  line-height: 16px;
+}
+
+/* 弹窗正文里有 \n\n 分段：Element Plus 默认不保留换行 */
+.el-message-box.skill-coming-dialog .el-message-box__message p {
+  white-space: pre-line;
+  line-height: 1.7;
+}
+
+.el-message-box.skill-coming-dialog {
+  max-width: 460px;
+  width: 460px;
+}

@@ -1,0 +1,93 @@
+<template name="galleryItem">
+  <view
+    class="gallery-card"
+    data-url="{{url}}"
+    data-video="{{isVideo}}"
+    bindtap="onItemTap"
+    bindlongpress="onItemLongPress"
+  >
+    <view wx:if="{{isVideo}}" class="video-cover">
+      <view class="video-play">▶</view>
+      <view class="video-label">视频</view>
+    </view>
+    <image wx:else class="gallery-img" src="{{fullUrl}}" mode="widthFix" lazy-load="{{true}}"></image>
+    <view class="gallery-meta">
+      <view class="gallery-prompt ellipsis-2">{{promptText}}</view>
+      <view class="row between gallery-sub">
+        <text class="muted tiny">{{timeText}}</text>
+        <text wx:if="{{costText}}" class="tiny gallery-cost">{{costText}}</text>
+      </view>
+      <view wx:if="{{owner}}" class="tiny gallery-owner">@{{owner}}</view>
+    </view>
+  </view>
+</template>
+
+<view class="page">
+  <view class="row between gallery-head">
+    <view class="col">
+      <view class="h1">我的作品</view>
+      <view class="muted small gallery-subtitle">共 {{total}} 个产出 · 按时间倒序</view>
+    </view>
+    <view class="refresh-btn" catchtap="onRefreshTap">↻</view>
+  </view>
+
+  <view class="filter-bar">
+    <view class="filter-row">
+      <text class="filter-label">时间</text>
+      <view class="filter-time">
+        <view
+          class="chip chip-sm {{timeId === item.id ? 'on' : ''}}"
+          wx:for="{{timeOptions}}"
+          wx:key="id"
+          data-id="{{item.id}}"
+          bindtap="onTime"
+        >{{item.label}}</view>
+      </view>
+    </view>
+    <view class="filter-row filter-row-last" wx:if="{{projectOptions.length}}">
+      <text class="filter-label">项目</text>
+      <scroll-view class="filter-scroll" scroll-x="{{true}}">
+        <view class="filter-project-chips">
+          <view
+            class="chip chip-sm {{projectValue === item.value ? 'on' : ''}}"
+            wx:for="{{projectOptions}}"
+            wx:key="value"
+            data-value="{{item.value}}"
+            bindtap="onProject"
+          >
+            <text>{{item.label}}</text>
+            <text wx:if="{{item.showCount}}" class="chip-count">{{item.count}}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <view wx:if="{{error}}" class="card err-banner mt-16">
+    <text class="small danger-text">{{error}}</text>
+  </view>
+
+  <view wx:if="{{rows.length}}" class="masonry">
+    <view class="masonry-col">
+      <template is="galleryItem" wx:for="{{colA}}" wx:key="key" data="{{...item}}" />
+    </view>
+    <view class="masonry-col masonry-col-gap">
+      <template is="galleryItem" wx:for="{{colB}}" wx:key="key" data="{{...item}}" />
+    </view>
+  </view>
+
+  <view wx:if="{{initialized && !rows.length && !loading}}" class="empty-wrap">
+    <view class="empty-icon">▦</view>
+    <view class="empty">{{emptyText}}</view>
+    <view class="row center-x">
+      <button wx:if="{{timeId !== 'all' || projectValue}}" class="btn btn-ghost btn-sm" catchtap="resetFilters">清除筛选</button>
+      <button wx:else class="btn btn-primary btn-sm" catchtap="goCreate">去出图</button>
+    </view>
+  </view>
+
+  <view wx:if="{{rows.length}}" class="list-foot">
+    <text wx:if="{{loading}}" class="muted tiny">加载中…</text>
+    <text wx:elif="{{!hasMore}}" class="muted tiny">没有更多了</text>
+    <text wx:else class="muted tiny">上拉加载更多</text>
+  </view>
+</view>

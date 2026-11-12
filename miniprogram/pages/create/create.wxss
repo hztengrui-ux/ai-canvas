@@ -1,0 +1,136 @@
+.create-sub {
+  margin-top: 8rpx;
+}
+
+.skill-desc {
+  margin: -4rpx 4rpx 8rpx;
+  padding: 16rpx 20rpx;
+  border-radius: 16rpx;
+  background-color: rgba(67, 97, 238, 0.06);
+  color: #5A6274;
+  font-size: 24rpx;
+  line-height: 1.55;
+}
+
+.chip-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.chips-nowrap {
+  display: inline-flex;
+  flex-wrap: nowrap;
+}
+
+.chips-nowrap .chip {
+  flex-shrink: 0;
+}
+
+.model-empty {
+  margin: 8rpx 4rpx 0;
+}
+
+.prompt-card {
+  padding: 0;
+  overflow: hidden;
+}
+
+.prompt-input {
+  width: 100%;
+  height: 260rpx;
+  padding: 24rpx;
+  border: none;
+  border-radius: 24rpx;
+  background-color: #FFFFFF;
+  line-height: 1.6;
+}
+
+.ref-grid {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.ref-item {
+  position: relative;
+  width: 196rpx;
+  height: 196rpx;
+  margin: 0 18rpx 18rpx 0;
+  border-radius: 20rpx;
+  overflow: hidden;
+  background-color: #F4F6FC;
+}
+
+.ref-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.ref-del {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44rpx;
+  height: 44rpx;
+  border-bottom-left-radius: 20rpx;
+  background-color: rgba(21, 23, 30, 0.68);
+  color: #FFFFFF;
+  font-size: 28rpx;
+  line-height: 1;
+}
+
+.ref-add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 196rpx;
+  height: 196rpx;
+  margin-bottom: 18rpx;
+  border-radius: 20rpx;
+  border: 1rpx dashed #D2D9EA;
+  background-color: rgba(244, 246, 252, 0.6);
+}
+
+.ref-add-icon {
+  color: #4361EE;
+  font-size: 44rpx;
+  line-height: 1;
+  margin-bottom: 10rpx;
+}
+
+.ref-hint {
+  line-height: 1.55;
+}
+
+.n-chip {
+  min-width: 96rpx;
+  text-align: center;
+}
+
+.cost-card {
+  padding: 24rpx 28rpx;
+}
+
+.cost-num {
+  color: #181A0C;
+  font-size: 32rpx;
+  font-weight: 600;
+  padding: 4rpx 18rpx;
+  border-radius: 999rpx;
+  background-color: #D8FA34;
+}
+
+.balance-mini {
+  margin-top: 4rpx;
+  color: #838CA0;
+}
+
+.submit-btn {
+  width: 280rpx;
+  height: 92rpx;
+  flex-shrink: 0;
+}

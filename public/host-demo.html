@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>宿主系统 · AI 画布嵌入演示</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --panel: #ffffff;
+    --border: #e5e7eb;
+    --text: #111827;
+    --text-2: #6b7280;
+    --accent: #7c3aed;
+    --accent-soft: #f3f0ff;
+  }
+  html.dark {
+    --bg: #0f1115;
+    --panel: #17181c;
+    --border: #26282e;
+    --text: #e6e8ec;
+    --text-2: #9aa0aa;
+    --accent: #a78bfa;
+    --accent-soft: #211d33;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+    font-size: 13px;
+    transition: background .2s ease, color .2s ease;
+  }
+
+  /* 宿主侧边栏 */
+  .host-side {
+    width: 200px;
+    flex-shrink: 0;
+    padding: 16px 12px;
+    border-right: 1px solid var(--border);
+    background: var(--panel);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .host-brand {
+    display: flex; align-items: center; gap: 8px;
+    padding: 4px 8px 18px;
+  }
+  .host-logo {
+    width: 28px; height: 28px; border-radius: 8px;
+    object-fit: contain; display: block;
+  }
+  .host-brand-name { font-weight: 500; font-size: 14px; }
+  .host-nav-label {
+    padding: 12px 8px 6px;
+    font-size: 11px; color: var(--text-2);
+  }
+  .host-nav {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: 8px;
+    color: var(--text-2); cursor: default;
+  }
+  .host-nav.active {
+    background: var(--accent-soft);
+    color: var(--accent); font-weight: 500;
+  }
+  .host-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor; opacity: .5;
+  }
+
+  /* 宿主主区 */
+  .host-main {
+    flex: 1; min-width: 0;
+    display: flex; flex-direction: column;
+  }
+  .host-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  .host-title { font-size: 14px; font-weight: 500; }
+  .host-title small {
+    display: block; margin-top: 2px;
+    font-size: 11px; font-weight: 400; color: var(--text-2);
+  }
+  .host-actions { display: flex; align-items: center; gap: 8px; }
+
+  button, select, input {
+    font-family: inherit; font-size: 12.5px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    padding: 6px 12px;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  button.primary {
+    background: var(--accent); border-color: var(--accent); color: #fff;
+  }
+  button.primary:hover { opacity: .88; color: #fff; }
+  input { cursor: text; min-width: 200px; }
+  input:focus { outline: none; border-color: var(--accent); }
+
+  /* 指令面板 */
+  .host-toolbar {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 10px;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .host-field { display: flex; align-items: center; gap: 6px; }
+  .host-field > span { font-size: 12px; color: var(--text-2); }
+
+  /* 画布容器 */
+  .host-stage { flex: 1; min-height: 0; padding: 12px 20px 16px; }
+  .host-frame {
+    width: 100%; height: 100%;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--panel);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .host-frame-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11.5px; color: var(--text-2);
+  }
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: #d1d5db;
+  }
+  .status-dot.on { background: #22c55e; }
+  iframe {
+    flex: 1; width: 100%; border: none; background: var(--bg);
+  }
+
+  /* 结果区 */
+  .host-log {
+    padding: 10px 20px 14px;
+    font-size: 11.5px; color: var(--text-2);
+    max-height: 92px; overflow-y: auto;
+    border-top: 1px solid var(--border);
+  }
+  .host-log b { color: var(--text); font-weight: 500; }
+  .host-log code {
+    font-family: ui-monospace, Menlo, Consolas, monospace;
+    color: var(--accent);
+  }
+</style>
+</head>
+<body>
+  <aside class="host-side">
+    <div class="host-brand">
+      <img class="host-logo" src="/brand/logo-mark.png" alt="跨多多科技" />
+      <div class="host-brand-name">业务中台</div>
+    </div>
+    <div class="host-nav-label">商品</div>
+    <div class="host-nav"><i class="host-dot"></i>商品列表</div>
+    <div class="host-nav"><i class="host-dot"></i>素材中心</div>
+    <div class="host-nav-label">设计</div>
+    <div class="host-nav active"><i class="host-dot"></i>AI 创作台</div>
+    <div class="host-nav"><i class="host-dot"></i>详情页</div>
+    <div class="host-nav-label">交易</div>
+    <div class="host-nav"><i class="host-dot"></i>订单管理</div>
+  </aside>
+
+  <main class="host-main">
+    <header class="host-topbar">
+      <div class="host-title">
+        AI 创作台（嵌入模式）
+        <small>画布以 iframe 嵌入，通过 postMessage 双向通信</small>
+      </div>
+      <div class="host-actions">
+        <span class="host-field"><span>宿主主题</span></span>
+        <button id="themeBtn">切到夜间</button>
+      </div>
+    </header>
+
+    <div class="host-toolbar">
+      <div class="host-field">
+        <span>铺开工作流</span>
+        <select id="wfSelect">
+          <option value="clothes-model">服装图模特图换衣</option>
+          <option value="style-reference">参考风格换衣</option>
+          <option value="pose-split">姿势裂变</option>
+          <option value="custom-scene">自由创作</option>
+          <option value="detail-page">详情页制作</option>
+        </select>
+        <button id="wfBtn">发送</button>
+      </div>
+
+      <div class="host-field">
+        <span>画面描述</span>
+        <input id="promptInput" placeholder="例如：白色背景，模特正面站姿" />
+        <button id="promptBtn">写入</button>
+      </div>
+
+      <div class="host-field">
+        <button id="studioBtn">切到创作台</button>
+      </div>
+    </div>
+
+    <div class="host-stage">
+      <div class="host-frame">
+        <div class="host-frame-bar">
+          <i class="status-dot" id="statusDot"></i>
+          <span id="statusText">等待画布就绪…</span>
+        </div>
+        <iframe id="canvasFrame" src="/" title="AI 画布"></iframe>
+      </div>
+    </div>
+
+    <div class="host-log" id="log">事件日志：</div>
+  </main>
+
+<script>
+  const frame = document.getElementById("canvasFrame");
+  const logEl = document.getElementById("log");
+  const statusDot = document.getElementById("statusDot");
+  const statusText = document.getElementById("statusText");
+
+  let hostDark = false;
+  let ready = false;
+
+  function log(msg) {
+    const t = new Date().toLocaleTimeString();
+    logEl.innerHTML += `<br><b>${t}</b> ${msg}`;
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  // 宿主 → 画布
+  function send(type, payload = {}) {
+    frame.contentWindow.postMessage(
+      { source: "ai-canvas-host", type, payload },
+      location.origin
+    );
+    log(`发出指令 <code>${type}</code> ${JSON.stringify(payload)}`);
+  }
+
+  // 画布 → 宿主
+  window.addEventListener("message", (event) => {
+    const data = event.data;
+    if (!data || data.source !== "ai-canvas") return;
+
+    switch (data.type) {
+      case "ready":
+        ready = true;
+        statusDot.classList.add("on");
+        statusText.textContent = "画布已就绪";
+        log("画布握手成功，已建立通信");
+        // 把宿主当前主题同步过去
+        send("theme", { dark: hostDark });
+        break;
+      case "theme-change":
+        log(`画布主题变为 <code>${data.payload.dark ? "dark" : "light"}</code>`);
+        break;
+      case "route-change":
+        log(`画布页面切换为 <code>${data.payload.route}</code>`);
+        break;
+      case "generated":
+        log(`收到生成结果：<code>${data.payload.images.length}</code> 张（${data.payload.model}）`);
+        log(`  第一张地址：${data.payload.images[0]?.url || "-"}`);
+        break;
+      case "resize":
+        log(`画布建议高度 <code>${data.payload.height}px</code>`);
+        break;
+      case "pong":
+        log("画布响应了 ping");
+        break;
+    }
+  });
+
+  document.getElementById("themeBtn").addEventListener("click", (e) => {
+    hostDark = !hostDark;
+    document.documentElement.classList.toggle("dark", hostDark);
+    e.target.textContent = hostDark ? "切到日间" : "切到夜间";
+    send("theme", { dark: hostDark });
+  });
+
+  document.getElementById("wfBtn").addEventListener("click", () => {
+    send("workflow", { workflowId: document.getElementById("wfSelect").value });
+  });
+
+  document.getElementById("promptBtn").addEventListener("click", () => {
+    const text = document.getElementById("promptInput").value.trim();
+    if (!text) return;
+    send("prompt", { text });
+  });
+
+  document.getElementById("studioBtn").addEventListener("click", () => {
+    send("route", { route: "studio" });
+  });
+
+  // 画布每次重新加载后重新握手
+  frame.addEventListener("load", () => {
+    ready = false;
+    statusDot.classList.remove("on");
+    statusText.textContent = "画布加载中…";
+  });
+</script>
+</body>
+</html>

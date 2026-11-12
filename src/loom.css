@@ -1,0 +1,1865 @@
+/* ==========================================================================
+   别名令牌（本文件新增的组件用到）
+   --ink / --ink-hover：墨黑按钮底（与 --text 同色，但语义不同，单独命名）
+   --ease：统一缓动
+   ⚠️ 必须显式定义：测试会扫描所有 CSS 变量引用是否都有定义，只写 fallback 不算
+   ========================================================================== */
+:root {
+  --ink: #15171e;
+  --ink-hover: #2b2f37;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+}
+html.dark {
+  --ink: #f4f6fc;
+  --ink-hover: #ffffff;
+}
+/* ==========================================================================
+   2026-10-31 布局改版：左侧图标导航栏 + 首页参考 loom42 结构
+   --------------------------------------------------------------------------
+   为什么单独开一个文件：改的是"骨架"（导航从顶栏搬到左栏），
+   塞进 redesign.css 会和历史规则互相打架。这里只做增量覆盖，
+   同特异性下后加载的赢（main.js 里本文件在 prism.css 之后）。
+   ========================================================================== */
+
+/* ---------- 1. 左侧图标栏 ---------- */
+.app-rail {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 76px;
+  /* 150：必须高于 .app-main.fullscreen 的 100（工作台是 fixed inset:0 全屏铺满，
+     层级低一点整条左栏就会被透明画布吃掉点击——菜单看得见但点不动）。
+     又必须低于 Element Plus 的弹层（2000+），否则对话框/下拉会被左栏压住。 */
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 0 14px;
+  gap: 6px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+}
+.rail-logo {
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: transparent;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+.rail-logo img {
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+.rail-logo:hover {
+  background: var(--surface-hover);
+}
+
+.rail-items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  align-items: center;
+}
+.rail-item {
+  width: 60px;
+  height: 58px;
+  border: none;
+  background: transparent;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  color: var(--text-3);
+  transition: background 0.16s ease, color 0.16s ease;
+}
+.rail-item .el-icon {
+  font-size: 17px;
+}
+.rail-item span {
+  font-size: 10px;
+  letter-spacing: 0.2px;
+  line-height: 1;
+}
+.rail-item:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+/* 当前项：荧光绿底 + 墨黑图标（参考稿是白色块，这里换品牌色） */
+.rail-item.on {
+  background: var(--lime, #d8fa34);
+  color: var(--lime-ink, #181a0c);
+  font-weight: 600;
+}
+
+.rail-foot {
+  margin-top: auto;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* 偏移交给各区域自己做：.studio-clean 是 100vw 的固定画布，整壳 padding 对它无效，
+   所以不能只给 .app-shell 加 padding（会导致非画布页偏移不一致） */
+.app-shell {
+  padding-left: 0;
+}
+.topbar {
+  padding-left: 92px;
+}
+.app-body {
+  padding-left: 76px;
+}
+.studio-clean {
+  margin-left: 76px;
+  width: calc(100vw - 76px);
+}
+
+/* 顶栏左侧不再放品牌（logo 已经在图标栏顶部），给工具按钮让位 */
+.topbar .topbar-left {
+  min-width: 0;
+  gap: 8px;
+}
+
+/* 顶栏里的旧胶囊导航：导航已搬到图标栏，这里只留「技能 / 更多」两个下拉，
+   药丸样式退成轻按钮，避免两套导航同时出现 */
+.topnav {
+  gap: 6px;
+}
+.topnav .topnav-item.on {
+  background: transparent;
+  box-shadow: none;
+}
+.topnav .topnav-more {
+  background: var(--surface-hover);
+  border-radius: 999px;
+}
+
+/* ---------- 2. 首页结构（对齐 loom42：横幅 → 垂类 Agent 输入 → 技能卡） ---------- */
+.loom-home {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 18px 28px 46px;
+}
+
+/* 2.1 横幅 */
+.loom-hero {
+  position: relative;
+  border-radius: 22px;
+  overflow: hidden;
+  min-height: 218px;
+  padding: 34px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: #fff;
+  background:
+    radial-gradient(620px 320px at 88% 18%, rgba(216, 250, 52, 0.28) 0%, rgba(216, 250, 52, 0) 62%),
+    radial-gradient(520px 300px at 8% 96%, rgba(124, 144, 246, 0.16) 0%, rgba(124, 144, 246, 0) 64%),
+    linear-gradient(108deg, #1b1e26 0%, #15171e 52%, #101216 100%);
+}
+.loom-hero::after {
+  /* 右下角一块极淡的点阵，避免大面积纯色发闷 */
+  content: "";
+  position: absolute;
+  right: -40px;
+  bottom: -60px;
+  width: 420px;
+  height: 260px;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 1px);
+  background-size: 18px 18px;
+  mask-image: radial-gradient(closest-side, #000, transparent);
+  pointer-events: none;
+}
+.loom-hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  height: 26px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(216, 250, 52, 0.16);
+  border: 1px solid rgba(216, 250, 52, 0.34);
+  color: var(--lime, #d8fa34);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+.loom-hero h1 {
+  margin: 14px 0 8px;
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -1.1px;
+  line-height: 1.12;
+}
+.loom-hero h1 em {
+  font-style: normal;
+  color: var(--lime, #d8fa34);
+}
+.loom-hero p {
+  margin: 0;
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.66);
+}
+.loom-hero-cta {
+  margin-top: 20px;
+  align-self: flex-start;
+  height: 40px;
+  padding: 0 20px;
+  border: none;
+  border-radius: 12px;
+  background: var(--lime, #d8fa34);
+  color: var(--lime-ink, #181a0c);
+  font-size: 13.5px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 8px 22px -10px rgba(188, 230, 0, 0.9);
+}
+.loom-hero-cta:hover {
+  background: var(--lime-deep, #bce600);
+}
+.loom-hero-dots {
+  position: absolute;
+  left: 40px;
+  bottom: 22px;
+  display: flex;
+  gap: 6px;
+}
+.loom-hero-dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.28);
+}
+.loom-hero-dots i.on {
+  width: 18px;
+  background: var(--lime, #d8fa34);
+}
+
+/* 垂类 Agent 输入区 */
+.loom-agent {
+  padding: 44px 0 34px;
+  text-align: center;
+}
+.loom-agent h2 {
+  margin: 0 0 22px;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+}
+.loom-agent-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 62px;
+  padding: 0 10px 0 20px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  max-width: 780px;
+  margin: 0 auto;
+}
+.loom-agent-bar .loom-plus {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-3);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+.loom-agent-bar input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: var(--text);
+}
+.loom-agent-bar input::placeholder {
+  color: var(--text-4);
+}
+.loom-agent-send {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 999px;
+  background: var(--ink, #15171e);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.loom-agent-send:disabled {
+  background: var(--surface-hover);
+  color: var(--text-4);
+  cursor: not-allowed;
+}
+
+/* 技能卡 */
+.loom-skills-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 6px 0 16px;
+}
+.loom-skills-head h3 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+.loom-skills-head em {
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-4);
+  letter-spacing: 0.2px;
+}
+.loom-skill-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+.loom-skill {
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--surface);
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+.loom-skill:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+}
+.loom-skill-thumb {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--surface-hover);
+}
+.loom-skill-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.loom-skill-badge {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(21, 23, 30, 0.72);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+}
+.loom-skill-body {
+  padding: 14px 16px 16px;
+}
+.loom-skill-body b {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+.loom-skill-body span {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-3);
+}
+
+/* 次级技能 chip 行 */
+.loom-chipso {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+.loom-chipso button {
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.loom-chipso button:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+@media (max-width: 1180px) {
+  .loom-skill-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .loom-hero h1 {
+    font-size: 32px;
+  }
+}
+@media (max-width: 900px) {
+  .app-shell {
+    padding-left: 0;
+  }
+  .app-rail {
+    display: none;
+  }
+}
+
+/* 首页容器放宽：新结构要 1320 的可用宽度（原来 900 放不下 4 列技能卡） */
+.wk-inner {
+  max-width: 1320px;
+  padding: 0 26px;
+}
+/* ---------- 3. 修补 ---------- */
+/* 顶栏胶囊导航只留「技能 / 更多」两个下拉，其余路由按钮隐藏（导航已在左栏） */
+.topnav .topnav-item:not(.topnav-more) {
+  display: none;
+}
+
+/* 技能卡：全局 button 有固定高度，这里必须显式放开，否则卡片只显示图片、文字被裁掉 */
+.loom-skill {
+  display: block;
+  height: auto;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.loom-skill-thumb {
+  display: block;
+  width: 100%;
+}
+.loom-skill-body {
+  display: block;
+}
+/* ---------- 4. 横幅右侧主图（参考稿右边是一整块产品照，纯渐变会显得空） ---------- */
+.loom-hero-media {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 46%;
+  pointer-events: none;
+  overflow: hidden;
+}
+.loom-hero-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  opacity: 0.9;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 38%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 38%);
+}
+.loom-hero h1,
+.loom-hero p,
+.loom-hero-tag,
+.loom-hero-cta {
+  position: relative;
+  z-index: 1;
+}
+
+/* 技能卡与指标卡之间留出呼吸（原来紧贴在一起） */
+.loom-skills {
+  margin-bottom: 26px;
+}
+.loom-chipso {
+  margin-bottom: 6px;
+}
+/* 顶栏让位：直接命中 .app-shell 的子级，避免被后续文件里的 .topbar 规则盖掉
+   （之前只写 .topbar，结果「技能」下拉被图标栏挡住一半） */
+/* ⚠️ 必须 !important：主题层用的是 `html[data-theme="prism"] .topbar { padding: 0 18px }`
+   （特异性 0,2,1），普通选择器压不住，结果「技能」下拉被图标栏挡住一半。 */
+.app-shell > .topbar {
+  padding-left: 92px !important;
+}
+/* ==========================================================================
+   5. 顶栏右上角：进行中 / 算力 / 限时折扣 / 通知（2026-10-31）
+   --------------------------------------------------------------------------
+   顺序按参考稿：进行中 → 积分数值 → 营销胶囊 → 通知 → 头像。
+   我们的额外项（外观、设置、新建创作、窗口按钮）排在通知之后，
+   这样"状态类"信息在左、"操作类"在右，扫视顺序和参考一致。
+   ========================================================================== */
+.run-pill {
+  height: 30px;
+  padding: 0 12px 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-hover);
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease;
+}
+.run-pill:hover {
+  background: var(--surface);
+  border-color: var(--border-strong);
+}
+.run-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--text-4);
+  flex: 0 0 auto;
+}
+/* 有任务在跑：绿点 + 呼吸，一眼能看出"机器在干活" */
+.run-pill.busy .run-dot {
+  background: var(--lime-deep, #bce600);
+  box-shadow: 0 0 0 3px rgba(216, 250, 52, 0.35);
+  animation: runPulse 1.6s ease-in-out infinite;
+}
+@keyframes runPulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(216, 250, 52, 0.35); }
+  50% { box-shadow: 0 0 0 5px rgba(216, 250, 52, 0.12); }
+}
+.run-label {
+  font-size: 11.5px;
+  letter-spacing: 0.2px;
+}
+.run-count {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.credit-inline {
+  height: 30px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.credit-inline:hover {
+  background: var(--surface-hover);
+}
+.credit-label {
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+.credit-num {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.promo-pill {
+  height: 30px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: 999px;
+  background: var(--lime, #d8fa34);
+  color: var(--lime-ink, #181a0c);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 16px -10px rgba(188, 230, 0, 0.95);
+  transition: background 0.16s ease, transform 0.16s ease;
+}
+.promo-pill:hover {
+  background: var(--lime-deep, #bce600);
+  transform: translateY(-1px);
+}
+.promo-pill .el-icon {
+  font-size: 13px;
+}
+
+/* 通知红点：用伪元素，不额外占位 */
+.bell-btn {
+  position: relative;
+}
+.bell-btn.dot::after {
+  content: "";
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--danger, #e0553f);
+  box-shadow: 0 0 0 2px var(--surface);
+}
+
+/* 通知弹层 */
+.notice-card {
+  margin: -4px -6px;
+}
+.notice-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 6px 8px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.notice-head b {
+  font-size: 13px;
+}
+.notice-head span {
+  font-size: 11px;
+  color: var(--text-3);
+}
+.notice-empty {
+  padding: 18px 8px;
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--text-4);
+}
+.notice-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 8px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+}
+.notice-row:hover {
+  background: var(--surface-hover);
+}
+.notice-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  background: var(--text-4);
+}
+.notice-dot.running {
+  background: var(--lime-deep, #bce600);
+}
+.notice-dot.done {
+  background: var(--success, #2e9e6b);
+}
+.notice-dot.error {
+  background: var(--danger, #e0553f);
+}
+.notice-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.notice-status {
+  font-size: 11px;
+  color: var(--text-3);
+  flex: 0 0 auto;
+}
+
+/* 窄一点就先把营销位收起来，避免右上角挤成两行 */
+@media (max-width: 1280px) {
+  .promo-pill {
+    display: none;
+  }
+}
+/* 顶栏同时出现两个荧光绿会很吵（限时折扣 + 新建创作）。
+   参考稿的层级是：营销胶囊彩色、主按钮反而是白的。
+   这里让「限时折扣」占住唯一的那抹荧光绿，「新建创作」改墨黑按钮。 */
+.topbar-right .btn-primary {
+  background: var(--ink, #15171e);
+  color: #fff;
+  box-shadow: none;
+}
+.topbar-right .btn-primary:hover {
+  background: var(--ink-hover, #2b2f37);
+  color: #fff;
+}
+/* 主题层的 `html[data-theme="prism"] .btn-primary`（0,2,1）压过普通选择器，
+   所以这里必须同样带主题前缀（0,3,1）才能真正盖住渐变底 */
+html[data-theme="prism"] .topbar-right .btn-primary,
+html.dark[data-theme="prism"] .topbar-right .btn-primary {
+  background: var(--ink, #15171e);
+  background-image: none;
+  color: #fff;
+  box-shadow: none;
+}
+html[data-theme="prism"] .topbar-right .btn-primary:hover,
+html.dark[data-theme="prism"] .topbar-right .btn-primary:hover {
+  background: var(--ink-hover, #2b2f37);
+  background-image: none;
+  color: #fff;
+}
+/* ==========================================================================
+   6. 工作台右侧固定「技能」面板（2026-10-31，结构对齐参考站 studio 右栏）
+   ========================================================================== */
+.studio-dock {
+  flex: 0 0 374px;
+  width: 374px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+}
+
+/* 顶部 Agent / 技能 双 Tab */
+.dock-tabs {
+  height: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--border);
+}
+.dock-tab {
+  flex: 1;
+  height: 34px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-3);
+  font-size: 12.5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.dock-tab .el-icon {
+  font-size: 14px;
+}
+.dock-tab:hover {
+  color: var(--text);
+}
+/* 当前页 = 白底 + 细边 + 轻阴影（参考稿的"白色激活块"） */
+.dock-tab.on {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+  font-weight: 700;
+  box-shadow: var(--shadow);
+}
+.dock-close {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--text-4);
+  border-radius: 6px;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+.dock-close:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.dock-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 当前技能头 */
+.dock-skill-head {
+  width: 100%;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+}
+.dock-skill-head:hover {
+  border-color: var(--border-strong);
+}
+.dock-skill-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: rgba(216, 250, 52, 0.32);
+  color: var(--lime-ink, #181a0c);
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  flex: 0 0 auto;
+}
+.dock-skill-head b {
+  flex: 1;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+.dock-caret {
+  color: var(--text-4);
+  font-size: 13px;
+}
+
+/* 使用模板 / 品类 */
+.dock-two {
+  display: flex;
+  gap: 8px;
+}
+.dock-chip-btn {
+  flex: 1;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.dock-chip-btn:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+}
+.dock-mini {
+  width: 132px;
+}
+
+/* 分区 */
+.dock-sec h4 {
+  margin: 0 0 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+.dock-sec-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.dock-sec-head h4 {
+  margin: 0;
+}
+.dock-link {
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  font-size: 11.5px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+.dock-link:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+/* 上传位 */
+.dock-uploads {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.dock-upload {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border: 1.5px dashed var(--border-strong);
+  border-radius: 12px;
+  background: var(--surface-hover);
+  color: var(--text-3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  overflow: hidden;
+  padding: 0;
+}
+.dock-upload:hover {
+  border-color: var(--lime-deep, #bce600);
+  background: rgba(216, 250, 52, 0.1);
+}
+.dock-upload.filled {
+  border-style: solid;
+  border-color: var(--border);
+  background: var(--surface);
+}
+.dock-upload img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.dock-upload-plus {
+  font-size: 16px;
+  color: var(--text-3);
+}
+.dock-upload em {
+  font-style: normal;
+  font-size: 10.5px;
+  color: var(--text-3);
+}
+.dock-req {
+  position: absolute;
+  top: 4px;
+  right: 7px;
+  color: var(--danger, #e0553f);
+  font-size: 11px;
+  font-style: normal;
+}
+.dock-upload-x {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgba(21, 23, 30, 0.72);
+  color: #fff;
+  font-size: 10px;
+  font-style: normal;
+  display: grid;
+  place-items: center;
+}
+
+/* 素材选择三按钮 */
+.dock-quick {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.dock-quick-btn {
+  height: 74px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+}
+.dock-quick-btn:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-hover);
+  color: var(--text);
+}
+.dock-quick-ic {
+  font-size: 17px;
+  color: var(--text-3);
+}
+.dock-quick-btn:hover .dock-quick-ic {
+  color: var(--lime-deep, #bce600);
+}
+.dock-quick-btn em {
+  font-style: normal;
+  font-size: 11px;
+}
+
+/* 比例 / 分辨率成对 */
+.dock-two-sec {
+  gap: 10px;
+}
+.dock-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dock-field > span {
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+
+.dock-hint {
+  margin: 8px 0 0;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-4);
+}
+
+/* 底部：消耗 + 生成 */
+.dock-foot {
+  flex-shrink: 0;
+  border-top: 1px solid var(--border);
+  padding: 10px 14px 14px;
+  background: var(--surface);
+}
+.dock-cost {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 34px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+.dock-cost b {
+  color: var(--text);
+  font-size: 13px;
+}
+.dock-generate {
+  width: 100%;
+  height: 44px;
+  margin-top: 8px;
+  border: none;
+  border-radius: 12px;
+  background: var(--lime, #d8fa34);
+  color: var(--lime-ink, #181a0c);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 8px 20px -12px rgba(188, 230, 0, 0.95);
+  transition: background 0.16s ease, transform 0.16s ease;
+}
+.dock-generate:hover {
+  background: var(--lime-deep, #bce600);
+  transform: translateY(-1px);
+}
+
+/* 画布上的提示与导入按钮 */
+.canvas-hint {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  font-size: 11.5px;
+  color: var(--text-4);
+  pointer-events: none;
+  z-index: 3;
+}
+.canvas-import {
+  position: absolute;
+  top: 12px;
+  /* 往左让 112px：右边 16px 是画布的「对话」按钮，两者会重叠成一个图标 */
+  right: 112px;
+  height: 30px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: 12px;
+  cursor: pointer;
+  z-index: 3;
+  box-shadow: var(--shadow);
+}
+.canvas-import:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+/* Agent 页的「打开完整对话」按钮（对话浮钮已合并到此） */
+.dock-open-chat {
+  margin-top: 10px;
+  width: 100%;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.dock-open-chat:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+}
+/* 顶栏左侧 logo 已移除（左图标栏顶部已有），把间距收回来，别留一个空档 */
+.clean-left {
+  gap: 8px;
+}
+.clean-brand {
+  gap: 0;
+}
+/* ==========================================================================
+   7. 内联 Agent 对话（原「对话」抽屉合并到右侧面板 Agent 页）
+   ========================================================================== */
+.agent-chat {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+  margin: -14px;           /* 铺满 dock-body 的 padding */
+  padding: 0;
+}
+.ac-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+.ac-welcome {
+  margin-top: auto;
+  margin-bottom: auto;
+  padding: 0 4px;
+}
+.ac-hi {
+  display: block;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  color: var(--text);
+}
+.ac-sub {
+  display: block;
+  margin-top: 6px;
+  font-size: 13.5px;
+  color: var(--text-2);
+}
+.ac-tip {
+  margin: 14px 0 0;
+  font-size: 11.5px;
+  line-height: 1.7;
+  color: var(--text-4);
+}
+.ac-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ac-msg {
+  max-width: 88%;
+  padding: 9px 12px;
+  border-radius: 12px;
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+.ac-msg.user {
+  align-self: flex-end;
+  background: var(--ink, #15171e);
+  color: #fff;
+}
+.ac-msg.assistant {
+  align-self: flex-start;
+  background: var(--surface-hover);
+  color: var(--text);
+}
+.ac-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 14px 0;
+}
+.ac-chip {
+  height: 28px;
+  padding: 0 11px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: 11.5px;
+  cursor: pointer;
+}
+.ac-chip:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+.ac-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px 14px;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+.ac-input input {
+  flex: 1;
+  min-width: 0;
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 12.5px;
+  color: var(--text);
+  outline: none;
+}
+.ac-input input:focus {
+  border-color: var(--lime-deep, #bce600);
+  box-shadow: 0 0 0 3px rgba(216, 250, 52, 0.28);
+}
+.ac-send {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 999px;
+  background: var(--ink, #15171e);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.ac-send:disabled {
+  background: var(--surface-hover);
+  color: var(--text-4);
+  cursor: not-allowed;
+}
+
+/* ---------- 7b. 属性栏并入右侧面板的「属性」页（2026-11-02） ----------
+   原来右栏是两列并排：374px 技能面板 + 268px 属性栏，画布被挤掉 642px。
+   现在属性栏只是同一面板里的第三页，宽度、边框、滚动全交给 dock。 */
+.studio-dock .inspector.is-embedded {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  border-left: none;
+  background: transparent;
+  overflow: visible;
+  animation: none;
+}
+.studio-dock .inspector.is-embedded .inspector-head {
+  padding: 0 0 10px;
+  border-bottom: 1px solid var(--border);
+}
+.studio-dock .inspector.is-embedded .inspector-title {
+  font-size: 13px;
+}
+.studio-dock .inspector.is-embedded .inspector-sub {
+  font-size: 11px;
+}
+.studio-dock .inspector.is-embedded .inspector-body {
+  padding: 12px 0 4px;
+}
+/* 属性页没有有效选中时的空态（项目重载后残留 selection 会走到这里） */
+.ins-empty {
+  margin-top: 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-4);
+  text-align: center;
+}
+.ins-empty .el-icon {
+  font-size: 26px;
+  opacity: 0.55;
+}
+.ins-empty p {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+/* ==========================================================================
+   8. 左下工具条 → 圆球 + 抽屉（2026-10-31）
+   --------------------------------------------------------------------------
+   收起状态只留一颗 52px 的墨黑圆球（荧光绿图标），点开向左滑出工具抽屉。
+   原 .float-rail 是常驻竖条，占画布左侧一条；球式后画布更整块。
+   ========================================================================== */
+.tool-orb {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 22;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.orb-ball {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 auto;
+  border: none;
+  border-radius: 999px;
+  background: var(--ink, #15171e);
+  color: var(--lime, #d8fa34);
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 10px 26px -10px rgba(21, 23, 30, 0.55), 0 2px 6px rgba(21, 23, 30, 0.18);
+  transition: transform 0.18s var(--ease, ease), background 0.18s ease, color 0.18s ease;
+}
+.orb-ball:hover {
+  transform: translateY(-1px) scale(1.04);
+}
+/* 展开时球变浅、图标变墨黑，和抽屉连成一体 */
+.tool-orb.open .orb-ball {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+}
+
+.orb-drawer {
+  width: 176px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-md);
+  transform-origin: left center;
+  transition: opacity 0.16s ease, transform 0.18s var(--ease, ease);
+}
+/* 收起：抽屉整体缩进球后面，不占位、不可点 */
+.tool-orb:not(.open) .orb-drawer {
+  opacity: 0;
+  transform: translateX(-12px) scale(0.94);
+  pointer-events: none;
+}
+
+.orb-item-wrap {
+  position: relative;
+}
+.orb-tool {
+  width: 100%;
+  height: 40px;
+  padding: 0 8px 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12.5px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+.orb-tool:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+.orb-tool-ic {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: var(--surface-hover);
+  color: var(--text-3);
+  font-size: 14px;
+  flex: 0 0 auto;
+}
+.orb-tool-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.orb-tool-key {
+  font-size: 10px;
+  color: var(--text-4);
+  font-variant-numeric: tabular-nums;
+}
+/* 当前工具：荧光绿底 + 墨黑字 */
+.orb-tool.on {
+  background: var(--lime, #d8fa34);
+  color: var(--lime-ink, #181a0c);
+  font-weight: 600;
+}
+.orb-tool.on .orb-tool-ic {
+  background: rgba(21, 23, 30, 0.12);
+  color: var(--lime-ink, #181a0c);
+}
+.orb-tool.on .orb-tool-key {
+  color: rgba(24, 26, 12, 0.55);
+}
+
+/* 二级菜单跟着抽屉往右弹 */
+.orb-submenu {
+  left: calc(100% + 10px);
+  top: 0;
+}
+
+/* 窄窗：抽屉贴着球往下展开，避免被画布切掉 */
+@media (max-width: 1100px) {
+  .tool-orb {
+    align-items: flex-start;
+  }
+  .orb-drawer {
+    width: 160px;
+  }
+}
+/* ==========================================================================
+   8b. 工具浮球（精致版 + 可拖动 + 双向展开）
+   --------------------------------------------------------------------------
+   设计要点：
+     · 球体用"墨黑 + 高光渐变 + 外发光"，不是纯色圆——纯色圆看起来像临时按钮；
+     · 拖动时轻微放大 + 阴影加深，给"拿起来"的反馈；
+     · 允许拖到任意位置，抽屉自动判断朝左还是朝右开。
+   ========================================================================== */
+.tool-orb {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: none;          /* 位置由 JS 计算，不再用 translateY */
+  z-index: 22;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: none;
+}
+.tool-orb.left {
+  flex-direction: row-reverse;
+}
+
+.orb-ball {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  background:
+    radial-gradient(120% 120% at 30% 20%, #2a2e39 0%, #15171e 52%, #0d0f14 100%);
+  color: var(--lime, #d8fa34);
+  display: grid;
+  place-items: center;
+  font-size: 21px;
+  cursor: grab;
+  touch-action: none;
+  box-shadow:
+    0 12px 30px -12px rgba(21, 23, 30, 0.7),
+    0 2px 6px rgba(21, 23, 30, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  transition: transform 0.18s var(--ease, ease), box-shadow 0.2s ease, background 0.2s ease;
+}
+.orb-ball:hover {
+  transform: translateY(-1px) scale(1.03);
+  box-shadow:
+    0 16px 36px -14px rgba(21, 23, 30, 0.75),
+    0 3px 8px rgba(21, 23, 30, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+.tool-orb.dragging .orb-ball {
+  cursor: grabbing;
+  transform: scale(1.06);
+  box-shadow:
+    0 22px 44px -16px rgba(21, 23, 30, 0.8),
+    0 4px 12px rgba(21, 23, 30, 0.34);
+}
+/* 球的荧光绿呼吸光，收起时也能看出"这里有个入口" */
+.orb-glow {
+  position: absolute;
+  inset: -6px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 50% 50%, rgba(216, 250, 52, 0.28), transparent 66%);
+  opacity: 0;
+  transition: opacity 0.24s ease;
+  pointer-events: none;
+}
+.orb-ball:hover .orb-glow,
+.tool-orb:not(.open) .orb-ball .orb-glow {
+  opacity: 0.9;
+}
+/* 展开后球变白卡 + ✕，与抽屉连成一体 */
+.tool-orb.open .orb-ball {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+  box-shadow: var(--shadow-md);
+}
+.tool-orb.open .orb-glow {
+  opacity: 0;
+}
+
+.orb-drawer {
+  width: 178px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-md);
+  transform-origin: left center;
+  transition: opacity 0.16s ease, transform 0.2s var(--ease, ease);
+}
+.tool-orb.left .orb-drawer {
+  transform-origin: right center;
+}
+.tool-orb:not(.open) .orb-drawer {
+  opacity: 0;
+  transform: translateX(-10px) scale(0.94);
+  pointer-events: none;
+}
+.tool-orb.left:not(.open) .orb-drawer {
+  transform: translateX(10px) scale(0.94);
+}
+
+/* ==========================================================================
+   9. 技能下拉面板（对齐参考站：分组 + 图标 + 说明 + 勾选）
+   ========================================================================== */
+.skill-menu {
+  margin: -8px -10px;
+  display: flex;
+  flex-direction: column;
+}
+.skill-menu-scroll {
+  max-height: 420px;
+  overflow-y: auto;
+  padding: 8px 8px 4px;
+}
+.skill-menu-group {
+  padding: 10px 10px 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: var(--text-4);
+  text-transform: uppercase;
+}
+.skill-menu-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.14s ease;
+}
+.skill-menu-row:hover {
+  background: var(--surface-hover);
+}
+.skill-menu-row.on {
+  background: rgba(216, 250, 52, 0.18);
+}
+.skill-menu-ic {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--surface-hover);
+  color: var(--text-2);
+  font-size: 16px;
+}
+.skill-menu-row.on .skill-menu-ic {
+  background: var(--lime, #d8fa34);
+  color: var(--lime-ink, #181a0c);
+}
+.skill-menu-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.skill-menu-text b {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.skill-menu-text em {
+  font-style: normal;
+  font-size: 10.5px;
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.skill-menu-check {
+  color: var(--text);
+  font-size: 13px;
+  flex: 0 0 auto;
+}
+.skill-menu-all {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 8px 8px;
+  padding: 10px 12px;
+  border: none;
+  border-top: 1px solid var(--border);
+  border-radius: 0 0 10px 10px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 11.5px;
+  cursor: pointer;
+}
+.skill-menu-all:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+/* ---------- 8c. 球体质感打磨：高光弧 + 内圈 + 图标光晕 + hover 文字 ---------- */
+.orb-ball::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: 999px;
+  background: radial-gradient(120% 90% at 32% 12%, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.04) 42%, transparent 62%);
+  pointer-events: none;
+}
+.orb-ball::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 0 0 6px rgba(21, 23, 30, 0.03);
+  pointer-events: none;
+}
+.orb-ball .el-icon {
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 0 6px rgba(216, 250, 52, 0.45));
+}
+.tool-orb.open .orb-ball .el-icon {
+  filter: none;
+}
+/* hover 时在球右侧露一个小标签，说明这是什么（不需要点开就知道） */
+.orb-tip {
+  position: absolute;
+  left: 64px;
+  top: 50%;
+  transform: translateY(-50%) translateX(-4px);
+  height: 24px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  background: rgba(21, 23, 30, 0.86);
+  color: #fff;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+.orb-ball:hover .orb-tip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+.tool-orb.open .orb-tip,
+.tool-orb.left .orb-tip {
+  display: none;
+}
+/* ==========================================================================
+   10. 画布空状态的「提示词助手」弹层（内容 teleport 到 body，必须写全局样式）
+   ========================================================================== */
+.ce-ai-pop.el-popover {
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+}
+.ce-ai-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ce-ai-head {
+  padding: 8px 10px 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  color: var(--text-4);
+  text-transform: uppercase;
+}
+.ce-ai-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.14s ease;
+}
+.ce-ai-row:hover {
+  background: var(--surface-hover);
+}
+.ce-ai-ic {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  background: var(--surface-hover);
+  color: var(--text-2);
+  font-size: 15px;
+}
+.ce-ai-row:hover .ce-ai-ic {
+  background: var(--lime, #d8fa34);
+  color: var(--lime-ink, #181a0c);
+}
+.ce-ai-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ce-ai-text b {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+.ce-ai-text em {
+  font-style: normal;
+  font-size: 10.5px;
+  color: var(--text-3);
+}
+/* ==========================================================================
+   11. 画布工具并入左侧图标栏（2026-11-01）
+   --------------------------------------------------------------------------
+   原来是一颗浮动球 + 抽屉；现在工具直接排在导航下面，用一条分隔线区隔：
+   上面是"去哪"（路由），下面是"用什么"（画布工具）。
+   ========================================================================== */
+.rail-items {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.rail-items::-webkit-scrollbar {
+  display: none;
+}
+
+.rail-divider {
+  width: 32px;
+  height: 1px;
+  margin: 8px auto 6px;
+  background: var(--border);
+  flex: 0 0 auto;
+}
+
+.rail-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  align-items: center;
+  overflow-y: auto;
+  scrollbar-width: none;
+  min-height: 0;
+}
+.rail-tools::-webkit-scrollbar {
+  display: none;
+}
+.rail-tool {
+  height: 52px;
+}
+/* 工具名比导航名长（"详情页制作"5 个字），必须压字号 + 禁止换行，否则会折成两行 */
+.rail-tool span {
+  font-size: 9px;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 62px;
+}
+
+/* 工具二级菜单（点有变体的工具，从栏右侧弹出） */
+.rail-tool-pop.el-popover {
+  padding: 6px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+}
+.rail-tool-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.rail-tool-menu-head {
+  padding: 8px 10px 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: var(--text-4);
+  text-transform: uppercase;
+}
+.rail-tool-menu-row {
+  padding: 9px 10px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+}
+.rail-tool-menu-row:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+/* 有变体的工具右侧一个小箭头，明确"点开还有下一级" */
+.rail-tool {
+  position: relative;
+}
+.rail-tool-more {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  margin-top: -2px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  opacity: 0.45;
+}
+.rail-tool:hover .rail-tool-more,
+.rail-tool.on .rail-tool-more {
+  opacity: 0.85;
+}

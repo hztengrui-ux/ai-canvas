@@ -1,0 +1,633 @@
+/* ==========================================================================
+   主题 token（2026-10-23 起只剩「棱镜 Prism」一套）
+
+   背景：原先有 4 套（Prism / Aurora / Atelier / Momentum），用户 2026-10-23
+   明确"图 2 那三个主题去掉" —— 三套旧配色与新定的「中性灰 + 墨黑 + 荧光绿」
+   放在一起显得杂，且每套都要维护一份完整 token 表，收益抵不上成本。
+   所以：只留 Prism，明暗两版；旧主题的 id 从注册表移除后，
+   localStorage 里残留的值会被 normalizeThemeId 静默回退到 Prism，不会白屏。
+
+   Prism 的用色分工（改色前先读这段，别再把荧光绿当信息色）：
+     底色 #ECEFF2 中性冷灰 —— 页面底
+     墨黑 #15171E           —— 主色：logo / 图标 / 链接 / 白字按钮底
+     荧光绿 #D8FA34         —— 只给主 CTA 与当前选中项（配墨黑字）
+     石板灰 #5A6274         —— info 语义色
+
+   ⚠️ 荧光绿天生对比低，**不能**拿来当图标/正文色；这也是 2026-10-18 第一版
+   "满屏黄绿"翻车的原因（详见 使用说明-DSH.md 第十二节）。
+   ========================================================================== */
+
+/* ---------- 切换过渡 ----------
+   只在点切换按钮那 360ms 挂上，不常驻。
+   常驻 * { transition } 会给画布拖拽带来可感知的卡顿。 */
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+  transition:
+    background-color 0.28s ease,
+    border-color 0.28s ease,
+    color 0.18s ease,
+    box-shadow 0.28s ease,
+    fill 0.28s ease !important;
+}
+
+/* ---------- 通用观感 ---------- */
+html[data-theme] {
+  --ring: color-mix(in srgb, var(--primary) 42%, transparent);
+  --focus-shadow: 0 0 0 3px var(--ring);
+}
+
+html[data-theme] button:focus-visible,
+html[data-theme] input:focus-visible,
+html[data-theme] textarea:focus-visible,
+html[data-theme] select:focus-visible,
+html[data-theme] [role="button"]:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-shadow);
+}
+
+/* Element Plus 变量统一由主题 token 推导，
+   用 color-mix 自动生成 light-3/5/7/8/9，省掉每套主题手写 5 个色阶。
+   浅色主题混白（越混越浅），深色主题表面本来就深（越混越暗）——
+   恰好符合 EP 在两种模式下的语义。 */
+html[data-theme] {
+  --el-color-primary: var(--primary);
+  --el-color-primary-light-3: color-mix(in srgb, var(--primary) 70%, var(--surface));
+  --el-color-primary-light-5: color-mix(in srgb, var(--primary) 50%, var(--surface));
+  --el-color-primary-light-7: color-mix(in srgb, var(--primary) 30%, var(--surface));
+  --el-color-primary-light-8: color-mix(in srgb, var(--primary) 20%, var(--surface));
+  --el-color-primary-light-9: color-mix(in srgb, var(--primary) 12%, var(--surface));
+  --el-color-primary-dark-2: var(--primary-pressed);
+
+  --el-bg-color: var(--surface);
+  --el-bg-color-page: var(--bg);
+  --el-bg-color-overlay: var(--surface);
+  --el-fill-color: var(--surface-hover);
+  --el-fill-color-light: var(--surface-hover);
+  --el-fill-color-blank: var(--surface);
+
+  --el-border-color: var(--border);
+  --el-border-color-light: var(--border);
+  --el-border-color-lighter: var(--border);
+  --el-border-color-extra-light: var(--border);
+
+  --el-text-color-primary: var(--text);
+  --el-text-color-regular: var(--text-1);
+  --el-text-color-secondary: var(--text-2);
+  --el-text-color-placeholder: var(--text-4);
+
+  --el-border-radius-base: var(--radius);
+  --el-border-radius-small: var(--radius-sm);
+  --el-box-shadow-light: var(--shadow);
+  --el-box-shadow: var(--shadow-md);
+}
+
+/* 画布底色：style.css 里写死成 #f8f9fb，这里交还给主题 */
+html[data-theme] .node-canvas-wrap .vue-flow {
+  background: var(--canvas-bg);
+}
+/* 深色下 style.css 也写死了网点色，一并交还主题 */
+html[data-theme] .node-canvas-wrap .vue-flow__background circle {
+  fill: var(--canvas-dot);
+}
+
+/* 主按钮：主题渐变 + 悬停微抬（「灵动」的最小单位） */
+html[data-theme] .btn-primary {
+  background-image: var(--accent-grad);
+  box-shadow: 0 1px 2px var(--primary-soft), 0 8px 20px -12px var(--primary);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+html[data-theme] .btn-primary:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: 0 2px 4px var(--primary-soft), 0 14px 28px -14px var(--primary);
+}
+html[data-theme] .btn-primary:active {
+  transform: translateY(0);
+  filter: brightness(0.96);
+}
+
+/* ==========================================================================
+   D · Prism 棱镜（2026-10-17 新增 · 用户指定参考稿配色）
+   --------------------------------------------------------------------------
+   取色来自用户给的运营分析稿（已用 Pillow 量化，不是眼估）：
+     底色  #EBEEF7 / #E8EDFA   雾霭蓝紫，比纯白有空气感、比灰更干净
+     反色  #15171E / #222224   墨黑面板（参考稿的导航条与左侧列表）
+     招牌  #D8FA34             柠檬绿，只给「当前项」与「主 CTA」，配墨黑文字
+     次强调 #4E9E00 / #7FD4D4  深绿（链接/聚焦/图标）与薄荷（正向数据）
+   与前三套的差别不在深浅，而在**用色逻辑**：
+   前面三套是「单主色 + 中性灰」，这套是「柠檬绿作行为色 + 深绿作信息色」，
+   行为色（可点）和信息色（可读）分开，界面上就不会到处都蓝。
+   注意：白标客户若换 --brand，请一并覆盖 --accent-grad / --lime，
+   否则会出现「红品牌 + 绿按钮」。
+   ========================================================================== */
+html[data-theme="prism"] {
+  --bg: #eceff2;
+  --surface: #ffffff;
+  --surface-hover: #f5f6f8;
+  --border: #e4e7eb;
+  --border-strong: #d3d8de;
+
+  --text: #15171e;
+  --text-1: #262a35;
+  --text-2: #5a6274;
+  --text-3: #838ca0;
+  --text-4: #a6adbd;
+
+  --sidebar-bg: #15171e;
+  --sidebar-item: #9aa2b4;
+  --sidebar-item-hover: #20232d;
+  --sidebar-item-active: #2a2e3a;
+  --sidebar-border: #20232d;
+
+  --brand-deep: #15171e;
+  /* 2026-10-18：主色由钴蓝 #4361EE 换成荧光绿系。
+     原来的两色分工（柠檬绿=行为色 / 钴蓝=信息色）在浅底上会"满屏蓝"，
+     现在统一到一条绿色谱：
+       #4E9E00 深一档 → 可用于白字按钮、链接、小字（对白底对比度约 4:1）
+       #86D000 亮一档 → 图标、描边、悬停
+       #D8FA34 最亮   → 仍只给主 CTA 与"当前项"（配墨黑字）
+     注意：白标客户改 --brand 时，请一并覆盖 --brand-light / --accent-grad / --lime。 */
+  --brand: #15171e;
+  --brand-light: #3c414c;
+  --brand-soft: rgba(21, 23, 30, 0.07);
+
+  --primary: var(--brand);
+  --primary-hover: #2b2f37;
+  --primary-pressed: #000000;
+  --primary-soft: rgba(21, 23, 30, 0.07);
+
+  --success: #2e9e6b;
+  --success-soft: rgba(46, 158, 107, 0.12);
+  --warning: #d8971a;
+  --warning-soft: rgba(216, 151, 26, 0.14);
+  --danger: #e0553f;
+  --danger-soft: rgba(224, 85, 63, 0.12);
+  /* info 原来是钴蓝，蓝一撤就会跟"没有颜色"混在一起；改橄榄绿，跟 success 的薄荷绿区分开 */
+  --info: #5a6274;
+  --info-soft: rgba(90, 98, 116, 0.12);
+
+  /* 参考稿的卡片是大圆角；14 / 20 / 28 起步才压得住满幅底色 */
+  --radius-sm: 10px;
+  --radius: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+
+  /* 阴影走「环境光」：几乎没有硬边，只有一层很散的投影 */
+  --shadow: 0 1px 2px rgba(21, 23, 30, 0.04), 0 10px 26px -20px rgba(21, 23, 30, 0.35);
+  --shadow-md: 0 2px 8px rgba(21, 23, 30, 0.05), 0 24px 48px -26px rgba(21, 23, 30, 0.4);
+
+  /* 主 CTA：柠檬绿渐变，配墨黑文字（字色在 prism.css 里改，这里只给底） */
+  --accent-grad: linear-gradient(135deg, #ebff7a 0%, #d8fa34 46%, #bce600 100%);
+  --glass: rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(120, 134, 168, 0.16);
+  --canvas-bg: #edf0f3;
+  --canvas-dot: #c7ced6;
+
+  /* 本套主题专有（前三套没有，缺了只会少一点味道，不会崩） */
+  --lime: #d8fa34;
+  --lime-deep: #bce600;
+  --lime-ink: #181a0c;
+  --mint: #7fd4d4;
+  --ink-panel: #15171e;
+  /* 页面底光：原来是蓝紫/天蓝两团光，配钴蓝很协调；主色换绿后必须跟着换，
+     否则会出现"绿按钮 + 蓝底光"的脏色。 */
+  --page-grad:
+    radial-gradient(1100px 520px at 10% -14%, #f4f7fb 0%, rgba(244, 247, 251, 0) 62%),
+    radial-gradient(900px 460px at 94% 2%, #eef2f7 0%, rgba(238, 242, 247, 0) 60%),
+    linear-gradient(180deg, #f1f3f6 0%, #eceff2 48%, #e7eaee 100%);
+}
+
+html.dark[data-theme="prism"] {
+  --bg: #0c0e14;
+  --surface: #141721;
+  --surface-hover: #1b1f2b;
+  --border: #262b39;
+  --border-strong: #363d4f;
+
+  --text: #f4f6fc;
+  --text-1: #e2e7f2;
+  --text-2: #a3acc0;
+  --text-3: #7a8398;
+  --text-4: #5c6478;
+
+  --sidebar-bg: #090b10;
+  --sidebar-item: #8e97ab;
+  --sidebar-item-hover: #141721;
+  --sidebar-item-active: #1b1f2b;
+  --sidebar-border: #1b1f2b;
+
+  --brand: #7c90f6;
+  --brand-light: #9aa9ff;
+  --brand-soft: rgba(124, 144, 246, 0.16);
+  --primary-hover: #93a4ff;
+  --primary-pressed: #6278e0;
+  --primary-soft: rgba(124, 144, 246, 0.16);
+
+  --success: #43c88a;
+  --success-soft: rgba(67, 200, 138, 0.14);
+  --warning: #e8b23c;
+  --warning-soft: rgba(232, 178, 60, 0.14);
+  --danger: #f4795f;
+  --danger-soft: rgba(244, 121, 95, 0.14);
+  --info: #6fa2f0;
+  --info-soft: rgba(111, 162, 240, 0.14);
+
+  --canvas-bg: #0a0d14;
+  --canvas-dot: #2c344a;
+
+  --glass: rgba(20, 23, 33, 0.74);
+  --glass-border: rgba(140, 152, 184, 0.14);
+
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px -20px rgba(0, 0, 0, 0.8);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.35), 0 24px 52px -24px rgba(0, 0, 0, 0.85);
+
+  --accent-grad: linear-gradient(135deg, #f1ff8c 0%, #ddff45 46%, #c6ef10 100%);
+  --lime: #ddff45;
+  --lime-deep: #c6ef10;
+  --lime-ink: #0c0e14;
+  --page-grad:
+    radial-gradient(900px 420px at 8% -12%, #18213a 0%, rgba(24, 33, 58, 0) 62%),
+    linear-gradient(180deg, #0d1018 0%, #0c0e14 52%, #0a0c11 100%);
+}
+
+/* ==========================================================================
+   批量节点模式（画布模式开关的「批量」侧）
+   ========================================================================== */
+
+/* 批量模式下，被选中的节点顶左角浮出一枚勾选徽章。
+   用 ::after 而不是往每个节点组件里塞 checkbox ——
+   七种节点类型不用各改一遍。 */
+.node-canvas-wrap.mode-batch .vue-flow__node.selected::after {
+  content: "✓";
+  position: absolute;
+  top: -9px;
+  left: -9px;
+  z-index: 6;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+}
+
+.node-canvas-wrap.mode-batch .vue-flow__node.selected {
+  box-shadow: 0 0 0 2px var(--primary), var(--shadow-md);
+}
+
+/* 批量模式：未选中的节点压暗，让选择状态一眼可读 */
+.node-canvas-wrap.mode-batch.has-selection .vue-flow__node:not(.selected) {
+  opacity: 0.55;
+}
+.node-canvas-wrap.mode-batch .vue-flow__node {
+  transition: opacity 0.16s ease, box-shadow 0.16s ease;
+}
+
+/* 批量模式顶部条 */
+.batch-bar {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  font-size: 12px;
+  color: var(--text-1);
+}
+.batch-bar .bb-count {
+  font-weight: 700;
+  color: var(--primary);
+}
+.batch-bar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-1);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+.batch-bar button:hover:not(:disabled) {
+  background: var(--primary-soft);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+.batch-bar button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.batch-bar button.primary {
+  background: var(--primary);
+  border-color: transparent;
+  color: #fff;
+}
+.batch-bar button.primary:hover:not(:disabled) {
+  background: var(--primary-hover);
+  color: #fff;
+}
+
+/* ---------- 批量面板（BatchDock） ---------- */
+.bd-dock {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  z-index: 12;
+  width: 380px;
+  max-height: calc(100% - 120px);
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+.bd-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+.bd-head .bd-sub {
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--text-3);
+}
+.bd-close {
+  margin-left: auto;
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  font-size: 14px;
+}
+.bd-body {
+  padding: 12px;
+  overflow: auto;
+}
+.bd-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+}
+.bd-textarea {
+  width: 100%;
+  min-height: 96px;
+  resize: vertical;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-hover);
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1.6;
+  font-family: inherit;
+}
+.bd-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: var(--focus-shadow);
+}
+.bd-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.bd-row .bd-field {
+  flex: 1;
+}
+.bd-num {
+  width: 100%;
+}
+.bd-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.bd-actions button {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-1);
+  font-size: 12px;
+  cursor: pointer;
+}
+.bd-actions button.primary {
+  background-image: var(--accent-grad);
+  border-color: transparent;
+  color: #fff;
+  font-weight: 600;
+}
+.bd-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.bd-list {
+  margin-top: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  max-height: 190px;
+  overflow: auto;
+}
+.bd-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  font-size: 12px;
+  border-bottom: 1px dashed var(--border);
+  color: var(--text-1);
+}
+.bd-item:last-child {
+  border-bottom: none;
+}
+.bd-idx {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  background: var(--surface-hover);
+  color: var(--text-3);
+  font-size: 11px;
+  line-height: 22px;
+  text-align: center;
+}
+.bd-item.is-running .bd-idx {
+  background: var(--info-soft);
+  color: var(--info);
+}
+.bd-item.is-done .bd-idx {
+  background: var(--success-soft);
+  color: var(--success);
+}
+.bd-item.is-error .bd-idx {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+.bd-prompt {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bd-state {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--text-3);
+}
+.bd-progress {
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: var(--surface-hover);
+  overflow: hidden;
+}
+.bd-progress i {
+  display: block;
+  height: 100%;
+  background-image: var(--accent-grad);
+  transition: width 0.25s ease;
+}
+
+/* ---------- 画布模式开关（分段控件） ---------- */
+.mode-switch {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-hover);
+}
+.mode-switch button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+.mode-switch button.on {
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  box-shadow: var(--shadow);
+}
+.mode-switch button:hover:not(.on) {
+  color: var(--text);
+}
+
+/* ---------- 主题切换器 ---------- */
+.ts-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-1);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.ts-trigger:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+.ts-cards {
+  display: grid;
+  gap: 8px;
+}
+.ts-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+.ts-card:hover {
+  transform: translateY(-1px);
+  border-color: var(--primary);
+}
+.ts-card.on {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}
+.ts-swatches {
+  display: flex;
+  flex-shrink: 0;
+}
+.ts-swatches i {
+  width: 14px;
+  height: 26px;
+  display: block;
+}
+.ts-swatches i:first-child {
+  border-radius: 4px 0 0 4px;
+}
+.ts-swatches i:last-child {
+  border-radius: 0 4px 4px 0;
+}
+.ts-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.ts-desc {
+  font-size: 11px;
+  color: var(--text-3);
+}
+.ts-card .el-icon {
+  margin-left: auto;
+  color: var(--primary);
+}
+.ts-dark {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-2);
+}
+.ts-dark .mode-switch {
+  margin-left: auto;
+}

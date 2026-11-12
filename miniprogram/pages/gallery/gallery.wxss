@@ -1,0 +1,197 @@
+.gallery-head {
+  margin-bottom: 24rpx;
+}
+
+.gallery-subtitle {
+  margin-top: 8rpx;
+}
+
+.refresh-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background-color: #FFFFFF;
+  border: 1rpx solid #E5E9F4;
+  color: #4361EE;
+  font-size: 34rpx;
+  line-height: 1;
+}
+
+.err-banner {
+  padding: 22rpx 28rpx;
+}
+
+.masonry {
+  display: flex;
+  align-items: flex-start;
+}
+
+.masonry-col {
+  width: calc((100% - 20rpx) / 2);
+  display: flex;
+  flex-direction: column;
+}
+
+.masonry-col-gap {
+  margin-left: 20rpx;
+}
+
+.gallery-card {
+  margin-bottom: 20rpx;
+  border-radius: 24rpx;
+  background-color: #FFFFFF;
+  overflow: hidden;
+  box-shadow: 0 2rpx 8rpx rgba(21, 23, 30, 0.04), 0 20rpx 40rpx -30rpx rgba(21, 23, 30, 0.4);
+}
+
+.gallery-img {
+  display: block;
+  width: 100%;
+  background-color: #F4F6FC;
+}
+
+.video-cover {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 320rpx;
+  background-color: #15171E;
+}
+
+.video-play {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: 50%;
+  background-color: #D8FA34;
+  color: #181A0C;
+  font-size: 28rpx;
+}
+
+.video-label {
+  position: absolute;
+  right: 16rpx;
+  bottom: 16rpx;
+  padding: 2rpx 12rpx;
+  border-radius: 999rpx;
+  background-color: rgba(21, 23, 30, 0.72);
+  color: #FFFFFF;
+  font-size: 20rpx;
+}
+
+.gallery-meta {
+  padding: 16rpx 18rpx 18rpx;
+}
+
+.gallery-prompt {
+  font-size: 24rpx;
+  line-height: 1.45;
+  color: #15171E;
+}
+
+.gallery-sub {
+  margin-top: 12rpx;
+}
+
+.gallery-cost {
+  color: #4361EE;
+}
+
+.gallery-owner {
+  margin-top: 6rpx;
+  color: #838CA0;
+}
+
+.empty-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 120rpx 0;
+}
+
+.empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 128rpx;
+  height: 128rpx;
+  margin-bottom: 24rpx;
+  border-radius: 32rpx;
+  background-color: rgba(67, 97, 238, 0.08);
+  color: #4361EE;
+  font-size: 52rpx;
+}
+
+.empty-wrap .empty {
+  padding: 0 0 28rpx;
+}
+
+.list-foot {
+  padding: 20rpx 0 8rpx;
+  text-align: center;
+}
+
+/* ---------- 筛选条：吸顶，不跟列表滚走 ---------- */
+.filter-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin-left: -28rpx;
+  margin-right: -28rpx;
+  margin-bottom: 20rpx;
+  padding: 16rpx 28rpx 6rpx;
+  background-color: #ECEFF9;
+  border-bottom: 1rpx solid rgba(229, 233, 244, 0.85);
+}
+
+.filter-row {
+  display: flex;
+  align-items: flex-start;
+}
+
+.filter-row-last {
+  margin-top: 6rpx;
+}
+
+.filter-label {
+  flex-shrink: 0;
+  width: 64rpx;
+  padding-top: 12rpx;
+  font-size: 22rpx;
+  color: #838CA0;
+}
+
+.filter-time {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.filter-scroll {
+  flex: 1;
+  width: 0;
+  white-space: nowrap;
+}
+
+.filter-project-chips {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  padding-right: 8rpx;
+}
+
+.filter-time .chip,
+.filter-project-chips .chip {
+  margin-bottom: 0;
+}
+
+.filter-project-chips .chip {
+  flex-shrink: 0;
+}

@@ -1,0 +1,108 @@
+/* ==========================================================================
+   窄窗适配（G8）
+   --------------------------------------------------------------------------
+   集中在**这一个文件**里回答「窗口变小了该怎么办」。
+   之前这些规则零散写在 style.css / newui.css / themes.css 里各一点点，改一处不知道
+   另一处，早晚打架。这里只做 CSS 布局收缩，不动 DOM 结构，也不碰任何 JS：
+   窗口小了就把次要信息让出去，把画布留给用户。
+
+   断点：
+     ≤1180px  属性栏收窄一档，顶栏让出算力和缩放数值
+     ≤1000px  再收一档，浮动工具条贴边
+     ≤720px   纵向压缩（顶栏矮 4px、任务条内边距收紧）
+   ========================================================================== */
+
+/* ---------- ① 宽度 ≤1180 ---------- */
+@media (max-width: 1180px) {
+  .studio-inspector {
+    flex: 0 0 232px;
+    width: 232px;
+  }
+
+  /* 顶栏：先把纯装饰和「别处还能看到」的信息收走，别动功能按钮 */
+  .clean-topbar {
+    padding: 0 8px 0 10px;
+  }
+  .clean-credits {
+    display: none; /* 余额在账号头像的 title 里还有，先让位 */
+  }
+  .clean-left,
+  .clean-center,
+  .clean-right {
+    gap: 6px;
+  }
+  .clean-sep {
+    display: none; /* 纯分隔线，窄了就是噪音 */
+  }
+
+  /* 浮动工具条贴边一点，别压住画布内容 */
+  .float-rail {
+    left: 8px;
+    padding: 4px;
+  }
+
+  /* 空态卡片别撑破窄窗 */
+  .ce-card.prompt,
+  .ce-card.upload {
+    max-width: calc(100vw - 40px);
+  }
+}
+
+/* ---------- ② 宽度 ≤1000 ---------- */
+@media (max-width: 1000px) {
+  .studio-inspector {
+    flex: 0 0 200px;
+    width: 200px;
+  }
+
+  /* 缩放百分比让给按钮；Ctrl+0 还能恢复视图，功能没丢 */
+  .clean-zoom {
+    display: none;
+  }
+
+  .clean-topbar {
+    padding: 0 6px 0 8px;
+  }
+
+  /* 属性栏内部：字号和间距跟着收，不然 200px 会挤成一团 */
+  .ins-kv {
+    font-size: 11px;
+  }
+  .ins-btn {
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+  .ins-src-prompt {
+    max-height: 3.6em;
+  }
+}
+
+/* ---------- ③ 高度 ≤720 ---------- */
+@media (max-height: 720px) {
+  .clean-topbar {
+    height: 36px;
+  }
+
+  /* 任务条：竖方向每省 1px 都是画布的，但别省到看不清状态 */
+  .taskbar {
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+
+  .float-rail {
+    top: 46%;
+  }
+
+  .ins-grid img {
+    max-height: 52px;
+  }
+}
+
+/* ---------- ④ 尊重系统「减弱动态效果」 ---------- */
+/* 前面骨架屏已经处理过 shimmer，这里补布局动画：
+   窄窗口下动画更容易让人眼晕，关掉也不损失信息。 */
+@media (prefers-reduced-motion: reduce) {
+  .studio-inspector {
+    animation: none;
+  }
+}

@@ -1,0 +1,62 @@
+.profile-card {
+  margin-top: 4rpx;
+}
+
+.profile-actions {
+  flex-shrink: 0;
+}
+
+.avatar-lg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 50%;
+  background-image: linear-gradient(135deg, #EBFF7A 0%, #D8FA34 46%, #BCE600 100%);
+  color: #181A0C;
+  font-size: 44rpx;
+  font-weight: 600;
+  box-shadow: 0 12rpx 28rpx -16rpx rgba(188, 230, 0, 0.9);
+}
+
+.balance-line {
+  display: flex;
+  align-items: baseline;
+  margin-top: 2rpx;
+}
+
+.balance-inline {
+  font-size: 52rpx;
+  font-weight: 600;
+  color: #15171E;
+  line-height: 1.15;
+}
+
+.balance-unit-inline {
+  margin-left: 10rpx;
+}
+
+.pwd-tip {
+  line-height: 1.55;
+}
+
+.server-now {
+  max-width: 420rpx;
+  text-align: right;
+}
+
+.saved-hint {
+  margin-top: 8rpx;
+  color: #D8971A;
+}
+
+.debug-tip {
+  line-height: 1.6;
+}
+
+.version {
+  padding: 56rpx 0 20rpx;
+  text-align: center;
+  line-height: 1.7;
+}

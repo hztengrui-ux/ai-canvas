@@ -1,0 +1,89 @@
+.login-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-bottom: 56rpx;
+  padding-bottom: calc(56rpx + env(safe-area-inset-bottom));
+}
+
+.login-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 48rpx;
+}
+
+.logo-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 112rpx;
+  height: 112rpx;
+  margin-bottom: 28rpx;
+  border-radius: 28rpx;
+  background-image: linear-gradient(135deg, #EBFF7A 0%, #D8FA34 46%, #BCE600 100%);
+  color: #181A0C;
+  font-size: 52rpx;
+  font-weight: 600;
+  box-shadow: 0 16rpx 32rpx -16rpx rgba(188, 230, 0, 0.9);
+}
+
+.login-title {
+  font-size: 44rpx;
+}
+
+.login-sub {
+  margin-top: 10rpx;
+  font-size: 24rpx;
+}
+
+.login-card {
+  padding: 36rpx 32rpx;
+}
+
+.login-btn {
+  margin-top: 8rpx;
+}
+
+.login-hint {
+  margin-top: 20rpx;
+  text-align: center;
+}
+
+.login-error {
+  margin-bottom: 20rpx;
+  padding: 16rpx 20rpx;
+  border-radius: 14rpx;
+  background-color: rgba(224, 85, 63, 0.08);
+  color: #E0553F;
+  font-size: 24rpx;
+  line-height: 1.5;
+}
+
+.login-foot {
+  margin-top: 40rpx;
+  padding: 0 12rpx;
+}
+
+.server-row {
+  padding: 6rpx 0;
+}
+
+.server-right {
+  justify-content: flex-end;
+}
+
+.login-server {
+  max-width: 400rpx;
+  text-align: right;
+}
+
+.server-edit {
+  margin-left: 10rpx;
+  flex-shrink: 0;
+}
+
+.login-tip {
+  margin-top: 12rpx;
+  line-height: 1.6;
+}

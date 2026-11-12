@@ -1,0 +1,252 @@
+.recharge-balance {
+  position: relative;
+  overflow: hidden;
+}
+
+.balance-label {
+  color: rgba(246, 248, 253, 0.62);
+  font-size: 24rpx;
+}
+
+.balance-row {
+  display: flex;
+  align-items: baseline;
+  margin-top: 4rpx;
+}
+
+.balance-num {
+  color: #D8FA34;
+  font-size: 68rpx;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -1rpx;
+}
+
+.balance-unit {
+  margin-left: 12rpx;
+  color: rgba(246, 248, 253, 0.7);
+  font-size: 24rpx;
+}
+
+.balance-ring {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  border: 14rpx solid rgba(216, 250, 52, 0.2);
+  border-top-color: #D8FA34;
+  transform: rotate(-35deg);
+}
+
+.balance-foot {
+  margin-top: 24rpx;
+  padding-top: 20rpx;
+  border-top: 1rpx solid rgba(246, 248, 253, 0.12);
+  color: rgba(246, 248, 253, 0.55);
+  font-size: 22rpx;
+}
+
+.notice-card {
+  box-shadow: none;
+}
+
+.notice-sandbox {
+  background-color: #FCFFF0;
+  border: 1rpx solid rgba(216, 250, 52, 0.6);
+}
+
+.notice-real {
+  background-color: #F7F9FF;
+  border: 1rpx solid rgba(67, 97, 238, 0.16);
+}
+
+.notice-text {
+  line-height: 1.6;
+}
+
+.order-panel {
+  border: 1rpx solid rgba(216, 250, 52, 0.75);
+  box-shadow: 0 20rpx 40rpx -30rpx rgba(188, 230, 0, 0.9);
+}
+
+.order-id {
+  word-break: break-all;
+}
+
+.sandbox-box {
+  padding: 20rpx;
+  border-radius: 20rpx;
+  background-color: rgba(216, 250, 52, 0.14);
+}
+
+.real-box {
+  padding: 20rpx;
+  border-radius: 20rpx;
+  background-color: rgba(67, 97, 238, 0.06);
+}
+
+.pay-error {
+  padding: 16rpx 18rpx;
+  border-radius: 14rpx;
+  background-color: rgba(224, 85, 63, 0.08);
+  color: #E0553F;
+  font-size: 24rpx;
+  line-height: 1.55;
+}
+
+/* ---------- 套餐网格 ---------- */
+.plan-grid {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.plan-card {
+  position: relative;
+  width: calc((100% - 20rpx) / 2);
+  margin: 0 20rpx 20rpx 0;
+  padding: 26rpx 24rpx;
+  border-radius: 24rpx;
+  background-color: #FFFFFF;
+  border: 2rpx solid #E5E9F4;
+  box-shadow: 0 2rpx 8rpx rgba(21, 23, 30, 0.04);
+  overflow: hidden;
+}
+
+.plan-card:nth-child(2n) {
+  margin-right: 0;
+}
+
+.plan-card.on {
+  border-color: #D8FA34;
+  box-shadow: 0 16rpx 34rpx -24rpx rgba(188, 230, 0, 0.95);
+}
+
+.plan-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #15171E;
+}
+
+.plan-price {
+  display: flex;
+  align-items: baseline;
+  margin-top: 14rpx;
+}
+
+.plan-currency {
+  font-size: 24rpx;
+  color: #5A6274;
+}
+
+.plan-price-num {
+  margin-left: 4rpx;
+  font-size: 48rpx;
+  font-weight: 600;
+  color: #15171E;
+  line-height: 1.1;
+}
+
+.plan-total {
+  margin-top: 12rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #4361EE;
+}
+
+.plan-sub {
+  margin-top: 4rpx;
+  min-height: 30rpx;
+  font-size: 22rpx;
+  color: #838CA0;
+}
+
+.hot-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 4rpx 14rpx;
+  border-bottom-left-radius: 18rpx;
+  background-color: #D8FA34;
+  color: #181A0C;
+  font-size: 20rpx;
+  font-weight: 600;
+  letter-spacing: 1rpx;
+}
+
+.plan-check {
+  position: absolute;
+  right: 16rpx;
+  bottom: 14rpx;
+  padding: 2rpx 12rpx;
+  border-radius: 999rpx;
+  background-color: #D8FA34;
+  color: #181A0C;
+  font-size: 20rpx;
+  font-weight: 600;
+}
+
+/* ---------- 订单列表 ---------- */
+.order-list {
+  padding: 6rpx 28rpx;
+}
+
+.order-row {
+  padding: 22rpx 0;
+}
+
+.order-row + .order-row {
+  border-top: 1rpx solid #E5E9F4;
+}
+
+.order-main {
+  margin-right: 16rpx;
+}
+
+.order-title-row {
+  align-items: center;
+}
+
+.order-plan {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #15171E;
+}
+
+.order-tag {
+  margin: 0 0 0 12rpx;
+}
+
+.tag.warn {
+  background-color: rgba(216, 151, 26, 0.14);
+  color: #D8971A;
+}
+
+.tag.success {
+  background-color: rgba(46, 158, 107, 0.12);
+  color: #2E9E6B;
+}
+
+.tag.muted {
+  background-color: #F4F6FC;
+  color: #838CA0;
+}
+
+.order-cancel {
+  flex-shrink: 0;
+}
+
+.recharge-foot {
+  padding: 32rpx 8rpx 16rpx;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.balance-mini {
+  margin-top: 4rpx;
+  color: #838CA0;
+}
+
+.recharge-btn {
+  width: 300rpx;
+  height: 92rpx;
+  flex-shrink: 0;
+}

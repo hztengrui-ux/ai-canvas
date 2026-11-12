@@ -1,0 +1,14 @@
+{
+  "description": "跨多多 AI 创作台 · 手机端（原生微信小程序，无 npm、无构建步骤）",
+  "appid": "touristappid",
+  "projectname": "kuaduoduo-ai-canvas-mobile",
+  "compileType": "miniprogram",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true
+  },
+  "condition": {}
+}

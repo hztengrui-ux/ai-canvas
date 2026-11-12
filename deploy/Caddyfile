@@ -1,0 +1,35 @@
+# Caddy 反代配置（自动 HTTPS）
+# SITE_ADDRESS 由 docker compose 环境变量注入；本地试跑时值为 localhost（Caddy 会签本地证书）
+{$SITE_ADDRESS:localhost} {
+	encode zstd gzip
+
+	# 大文件上传（素材/图片）与长任务
+	request_body {
+		max_size 200MB
+	}
+
+	# 生成任务可能跑几十秒到几分钟，超时要放宽
+	reverse_proxy app:5181 {
+		transport http {
+			read_timeout 10m
+			write_timeout 10m
+		}
+	}
+
+	# 安全头（应用自身也会发，这里兜底）
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "same-origin"
+		-Server
+	}
+
+	# 访问日志（排障用，注意含路径不含请求体）
+	log {
+		output file /data/access.log {
+			roll_size 50mb
+			roll_keep 10
+		}
+		format json
+	}
+}

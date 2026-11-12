@@ -1,0 +1,868 @@
+/* ==========================================================================
+   界面精修层 · 2026-10-16
+   --------------------------------------------------------------------------
+   为什么单开一层，而不是改各组件里的样式：
+     · 组件样式散在 47 个文件 / 59 万字节里，逐个改风险高、回归面大；
+     · 这一层只做「表面」，不碰任何布局结构与业务逻辑，出问题可以整文件删掉；
+     · 全部走主题 token，所以三套主题 × 明暗共 6 种配色一起受益。
+
+   加载位置（main.js）：... → themes.css → **redesign.css** → responsive.css
+   放在 responsive 之前是必须的：窄窗适配是「后写的规则赢」，
+   精修层若排在它后面，会把小屏下的收缩规则盖掉。
+
+   设计口径：
+     · 层级靠**字重 + 字距 + 留白**建立，不靠加边框（边框越多越像十年前的后台）
+     · 圆角 8/12/16 三档，阴影只用两层（贴地 + 浮起）
+     · 交互反馈统一 0.16s ease，悬浮提亮 4%、按下压暗 2%
+   ========================================================================== */
+
+/* ---------- 0. 基础：字体、渲染、滚动条 ---------- */
+:root {
+  --rd-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", system-ui, sans-serif;
+  --rd-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --rd-ring: 0 0 0 3px color-mix(in srgb, var(--primary) 26%, transparent);
+}
+
+/* ---------- 0.1 旧变量兼容别名（修静默失效的样式） ----------
+   2026-10-16 审计发现：newui.css 里有 **49 处** 样式引用了一组早已不存在的变量：
+     --bg-1 ×16、--border-1 ×24、--bg-2 ×8、--bg-3 ×1
+   这些声明不会报错，只会被浏览器当成「无效值」整条丢掉 ——
+   表现就是面板没底色、没边框，里面的文字像裸奔（空画布引导、卡片、分隔线都中招）。
+   这里把旧名映射到当前 token：不改任何业务 CSS，一次修好全部 49 处。
+   （变量是惰性解析的，所以 :root 上写 var(--surface) 也能跟随后面的主题切换。） */
+:root {
+  --bg-1: var(--surface);
+  --bg-2: var(--surface-hover);
+  --bg-3: var(--bg);
+  --border-1: var(--border);
+  --fill-color: var(--surface-hover);
+  --shadow-sm: var(--shadow);
+  --nf-group-tint: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+html[data-theme] body,
+html[data-theme] button,
+html[data-theme] input,
+html[data-theme] textarea,
+html[data-theme] select {
+  font-family: var(--rd-font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html[data-theme] body {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-1);
+  letter-spacing: 0.005em;
+}
+
+/* 细滚动条：默认的 17px 宽灰条在画布边上非常抢眼 */
+html[data-theme] ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+html[data-theme] ::-webkit-scrollbar-track {
+  background: transparent;
+}
+html[data-theme] ::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+  background-color: color-mix(in srgb, var(--text-4) 46%, transparent);
+}
+html[data-theme] ::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in srgb, var(--text-3) 62%, transparent);
+}
+html[data-theme] ::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* ---------- 1. 左侧图标轨 ---------- */
+html[data-theme] .sidebar {
+  background: var(--sidebar-bg);
+  box-shadow: inset -1px 0 0 var(--sidebar-border);
+}
+
+html[data-theme] .sidebar-item {
+  height: 38px;
+  margin: 2px 8px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  color: var(--sidebar-item);
+  font-size: 13px;
+  font-weight: 500;
+  transition: background-color 0.16s var(--rd-ease), color 0.16s var(--rd-ease);
+}
+html[data-theme] .sidebar-item:hover {
+  background: var(--sidebar-item-hover);
+  color: #fff;
+}
+html[data-theme] .sidebar-item.on,
+html[data-theme] .sidebar-item.active {
+  background: var(--sidebar-item-active);
+  color: #fff;
+  font-weight: 600;
+}
+/* 选中左侧加一条高亮竖条：眼睛在图标列扫的时候有锚点 */
+html[data-theme] .sidebar-item.on::before,
+html[data-theme] .sidebar-item.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 9px;
+  bottom: 9px;
+  width: 2px;
+  border-radius: 0 2px 2px 0;
+  background: var(--primary);
+}
+
+html[data-theme] .sidebar-section-title {
+  padding: 14px 16px 6px;
+  color: color-mix(in srgb, var(--sidebar-item) 72%, transparent);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+html[data-theme] .user-card {
+  border-radius: var(--radius);
+  background: color-mix(in srgb, #fff 5%, transparent);
+}
+
+/* ---------- 2. 顶栏（StudioView 的 clean-*） ---------- */
+html[data-theme] .clean-topbar {
+  height: 48px;
+  padding: 0 12px;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--glass);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+}
+
+html[data-theme] .clean-brand {
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+html[data-theme] .clean-project {
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--text-1);
+  transition: background-color 0.16s var(--rd-ease), border-color 0.16s var(--rd-ease);
+}
+html[data-theme] .clean-project:hover {
+  background: var(--surface-hover);
+  border-color: var(--border);
+}
+
+/* 模型选择器：从"裸文字"升级成明确的可点控件（带边框 + 悬停反馈） */
+html[data-theme] .model-trigger {
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-1);
+  font-size: 12.5px;
+  font-weight: 550;
+  box-shadow: var(--shadow);
+  transition: border-color 0.16s var(--rd-ease), box-shadow 0.16s var(--rd-ease);
+}
+html[data-theme] .model-trigger:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+/* 工具栏图标按钮：统一 30×30 点击区，悬停才显底 */
+html[data-theme] .clean-ctl,
+html[data-theme] .clean-icon-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  transition: background-color 0.16s var(--rd-ease), color 0.16s var(--rd-ease);
+}
+html[data-theme] .clean-ctl:hover:not(:disabled),
+html[data-theme] .clean-icon-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+html[data-theme] .clean-ctl:disabled {
+  opacity: 0.36;
+  cursor: not-allowed;
+}
+
+html[data-theme] .clean-sep {
+  width: 1px;
+  height: 18px;
+  margin: 0 4px;
+  background: var(--border);
+}
+
+html[data-theme] .clean-save,
+html[data-theme] .clean-zoom,
+html[data-theme] .clean-credits {
+  font-size: 12.5px;
+  font-weight: 550;
+  color: var(--text-2);
+}
+html[data-theme] .clean-zoom {
+  font-variant-numeric: tabular-nums;
+  min-width: 42px;
+  text-align: center;
+}
+
+/* 顶栏主行动按钮：整页唯一的高饱和色，只出现一次 */
+html[data-theme] .clean-recharge {
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border: 1px solid color-mix(in srgb, var(--primary) 42%, transparent);
+  background: var(--primary-soft);
+  color: var(--primary);
+  transition: background-color 0.16s var(--rd-ease), transform 0.16s var(--rd-ease);
+}
+html[data-theme] .clean-recharge:hover {
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+  transform: translateY(-1px);
+}
+
+html[data-theme] .clean-user {
+  border-radius: 999px;
+  transition: box-shadow 0.16s var(--rd-ease);
+}
+html[data-theme] .clean-user:hover {
+  box-shadow: var(--rd-ring);
+}
+
+/* ---------- 3. 模型选择面板 ---------- */
+html[data-theme] .model-picker-tabs {
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--radius);
+  background: var(--surface-hover);
+}
+html[data-theme] .model-picker-tab {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12.5px;
+  font-weight: 550;
+  color: var(--text-3);
+  transition: background-color 0.16s var(--rd-ease), color 0.16s var(--rd-ease);
+}
+html[data-theme] .model-picker-tab.on {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+html[data-theme] .model-card {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  transition: border-color 0.16s var(--rd-ease), box-shadow 0.16s var(--rd-ease),
+    transform 0.16s var(--rd-ease);
+}
+html[data-theme] .model-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+html[data-theme] .model-card.on {
+  border-color: color-mix(in srgb, var(--primary) 55%, transparent);
+  box-shadow: var(--rd-ring), var(--shadow);
+}
+html[data-theme] .model-card-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+html[data-theme] .model-card-tag {
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+html[data-theme] .model-card-price {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 4. 画布与工具栏 ---------- */
+html[data-theme] .canvas-toolbar {
+  height: 40px;
+  padding: 0 8px;
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--glass);
+  backdrop-filter: blur(14px) saturate(1.4);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  box-shadow: var(--shadow);
+}
+
+/* 工具条上的胶囊开关（无限画布 / 批量节点） */
+html[data-theme] .canvas-toolbar .tb-btn,
+html[data-theme] .canvas-toolbar [class*="pill"],
+html[data-theme] .canvas-toolbar [class*="toggle"] {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 550;
+  transition: background-color 0.16s var(--rd-ease), color 0.16s var(--rd-ease);
+}
+
+html[data-theme] .float-corner-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
+  box-shadow: var(--shadow);
+  transition: color 0.16s var(--rd-ease), box-shadow 0.16s var(--rd-ease);
+}
+html[data-theme] .float-corner-btn:hover {
+  color: var(--text);
+  box-shadow: var(--shadow-md);
+}
+
+html[data-theme] .float-chat {
+  border-radius: 999px;
+  box-shadow: var(--shadow-md);
+}
+
+html[data-theme] .float-presets,
+html[data-theme] .float-material {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+}
+html[data-theme] .float-presets-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+html[data-theme] .float-presets-sub {
+  font-size: 11px;
+  color: var(--text-3);
+}
+
+/* 画布点阵：缩小 + 降对比，避免"屏幕上有层灰" */
+html[data-theme] .node-canvas-wrap .vue-flow__background circle,
+html[data-theme] .vue-flow__background circle {
+  r: 1;
+}
+
+/* ---------- 5. 任务条 ---------- */
+html[data-theme] .taskbar {
+  border-top: 1px solid var(--border);
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font-size: 12.5px;
+}
+html[data-theme] .taskbar-head {
+  font-weight: 600;
+  color: var(--text-2);
+}
+html[data-theme] .taskbar-item {
+  border-radius: var(--radius-sm);
+  transition: background-color 0.16s var(--rd-ease);
+}
+html[data-theme] .taskbar-item:hover {
+  background: var(--surface-hover);
+}
+html[data-theme] .taskbar-empty {
+  color: var(--text-4);
+}
+/* 2026-10-16：底部任务条已整体移除（任务入口改到顶栏），
+   相关的 .taskbar-clear.is-error / .tb-dismiss 覆盖样式一并删掉，
+   新面板的样式是组件 scoped 的，不再往全局层塞任务相关规则。 */
+html[data-theme] .tb-dot {
+  box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 16%, transparent);
+}
+
+/* ---------- 6. Element Plus 统一手感 ---------- */
+html[data-theme] {
+  --el-font-size-base: 13px;
+}
+
+html[data-theme] .el-button {
+  border-radius: var(--radius-sm);
+  font-weight: 550;
+  transition: transform 0.16s var(--rd-ease), box-shadow 0.16s var(--rd-ease),
+    background-color 0.16s var(--rd-ease);
+}
+html[data-theme] .el-button:not(.is-text):not(.is-link):hover {
+  transform: translateY(-1px);
+}
+html[data-theme] .el-button:not(.is-text):not(.is-link):active {
+  transform: translateY(0);
+}
+
+html[data-theme] .el-input__wrapper,
+html[data-theme] .el-textarea__inner,
+html[data-theme] .el-select__wrapper {
+  border-radius: var(--radius-sm);
+  box-shadow: 0 0 0 1px var(--border) inset;
+  transition: box-shadow 0.16s var(--rd-ease);
+}
+html[data-theme] .el-input__wrapper:hover,
+html[data-theme] .el-textarea__inner:hover,
+html[data-theme] .el-select__wrapper:hover {
+  box-shadow: 0 0 0 1px var(--border-strong) inset;
+}
+html[data-theme] .el-input__wrapper.is-focus,
+html[data-theme] .el-textarea__inner:focus,
+html[data-theme] .el-select__wrapper.is-focused {
+  box-shadow: 0 0 0 1px var(--primary) inset, var(--rd-ring) !important;
+}
+
+html[data-theme] .el-dialog {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+html[data-theme] .el-dialog__header {
+  margin-right: 0;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--border);
+}
+html[data-theme] .el-dialog__title {
+  font-size: 15px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+html[data-theme] .el-dialog__body {
+  padding: 16px 20px;
+}
+html[data-theme] .el-dialog__footer {
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--border);
+}
+
+html[data-theme] .el-card,
+html[data-theme] .el-drawer,
+html[data-theme] .el-popover,
+html[data-theme] .el-dropdown-menu,
+html[data-theme] .el-popper {
+  border-radius: var(--radius);
+}
+
+html[data-theme] .el-tag {
+  border-radius: 999px;
+  font-weight: 550;
+}
+
+html[data-theme] .el-table th.el-table__cell {
+  background: var(--surface-hover);
+  font-weight: 600;
+  color: var(--text-2);
+}
+html[data-theme] .el-table td.el-table__cell,
+html[data-theme] .el-table th.el-table__cell {
+  border-bottom-color: var(--border);
+}
+
+html[data-theme] .el-message-box {
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+html[data-theme] .el-tooltip__popper,
+html[data-theme] .el-popper.is-dark {
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+}
+
+/* ---------- 7. 首页卡片与空态 ---------- */
+/* 空画布引导的定位修复（2026-10-16）
+   根因：style.css 的 `.canvas-empty` 带 left:50%/top:44% + transform:translate(-50%,-50%)，
+   newui.css 的 `.canvas-empty.rich` 把定位改成了 inset:0（整屏 flex 居中），
+   但**没有清掉继承下来的 transform** —— 于是一个整屏容器又被平移了自身一半宽高：
+   内容全部挤到左上角、左侧还被裁掉半截，看上去就是"几行字叠在一起"。
+   这里把 transform 显式归零，让 .rich 的 flex 居中真正生效。 */
+html[data-theme] .canvas-empty.rich {
+  transform: none;
+}
+html[data-theme] .canvas-empty.rich .ce-cards {
+  width: 100%;
+  max-width: 760px;
+}
+html[data-theme] .canvas-empty.rich .ce-title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+html[data-theme] .canvas-empty.rich .ce-sub {
+  margin-top: -8px;
+  font-size: 13px;
+  color: var(--text-3);
+}
+html[data-theme] .ce-card {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 18px;
+  transition: border-color 0.16s var(--rd-ease), box-shadow 0.16s var(--rd-ease),
+    transform 0.16s var(--rd-ease);
+}
+html[data-theme] .ce-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+html[data-theme] .ce-card.prompt {
+  flex: 1;
+  min-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+html[data-theme] .ce-card-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 19px;
+  font-weight: 600;
+}
+html[data-theme] .ce-card-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+html[data-theme] .ce-card-hint {
+  font-size: 12px;
+  color: var(--text-3);
+}
+html[data-theme] .ce-samples {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  max-width: 760px;
+}
+html[data-theme] .ce-samples-label {
+  width: 100%;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-4);
+}
+html[data-theme] .ce-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  transition: border-color 0.16s var(--rd-ease), transform 0.16s var(--rd-ease),
+    box-shadow 0.16s var(--rd-ease);
+}
+html[data-theme] .ce-chip:hover {
+  border-color: color-mix(in srgb, var(--primary) 45%, transparent);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+html[data-theme] .ce-chip b {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+html[data-theme] .ce-chip i {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--text-4);
+}
+html[data-theme] .ce-tip {
+  font-size: 11.5px;
+  color: var(--text-4);
+}
+html[data-theme] .home-hero h1 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+html[data-theme] [class*="case-card"],
+html[data-theme] [class*="insp-card"],
+html[data-theme] [class*="tpl-card"] {
+  border-radius: var(--radius-lg);
+  transition: transform 0.18s var(--rd-ease), box-shadow 0.18s var(--rd-ease);
+}
+html[data-theme] [class*="case-card"]:hover,
+html[data-theme] [class*="tpl-card"]:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ---------- 8. 无障碍与动效偏好 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme] * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* ---------- 9. 顶栏导航：侧栏 → 顶栏分段胶囊（2026-10-16 改版） ----------
+   改版动机（用户原话："顶部与首页布局超级难看"，并给了参考稿）：
+   参考稿的导航是顶栏里的一组分段药丸，页面拿整幅宽度；
+   而我们是左侧一条深色侧栏 —— 深色块压在浅色内容旁边，两套视觉体系互相打架。
+   这里把导航做成药丸：当前项用**反色**填充（明暗主题自动跟随，不用写两套色）。 */
+html[data-theme] .topbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 56px;
+  padding: 0 14px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: none;
+}
+html[data-theme] .topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+}
+html[data-theme] .topbar-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+html[data-theme] .topnav {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--surface-hover);
+  border: 1px solid var(--border);
+}
+html[data-theme] .topnav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-3);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 550;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.16s var(--rd-ease), background-color 0.16s var(--rd-ease);
+}
+html[data-theme] .topnav-item:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+}
+html[data-theme] .topnav-item.on {
+  background: var(--text);
+  color: var(--surface);
+  box-shadow: var(--shadow);
+}
+html[data-theme] .topnav-more {
+  color: var(--text-3);
+}
+html[data-theme] .topnav-hint {
+  margin-left: 6px;
+  font-size: 11px;
+  color: var(--text-4);
+}
+/* 侧栏移除后，内容区拿整幅宽度 */
+html[data-theme] .app-body {
+  display: flex;
+  min-height: 0;
+}
+html[data-theme] .app-main {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+/* ---------- 10. 卡片系统（对齐参考稿：大圆角 + 细边 + 轻阴影；暗卡做强调） ---------- */
+html[data-theme] {
+  /* 「反色卡」用于强调块：浅色主题里是深卡，深色主题里换成抬升卡 */
+  --rd-inv-bg: #171a21;
+  --rd-inv-fg: #f7f8fa;
+  --rd-inv-sub: rgba(247, 248, 250, 0.62);
+  --rd-inv-line: rgba(255, 255, 255, 0.1);
+}
+body.dark {
+  --rd-inv-bg: var(--surface-hover);
+  --rd-inv-fg: var(--text);
+  --rd-inv-sub: var(--text-3);
+  --rd-inv-line: var(--border);
+}
+html[data-theme] .rd-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow);
+}
+html[data-theme] .rd-card.dark {
+  background: var(--rd-inv-bg);
+  border-color: var(--rd-inv-line);
+  color: var(--rd-inv-fg);
+}
+html[data-theme] .rd-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+@media (max-width: 1180px) {
+  html[data-theme] .rd-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+html[data-theme] .rd-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 18px;
+  min-height: 108px;
+}
+html[data-theme] .rd-metric-label {
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+html[data-theme] .rd-metric.dark .rd-metric-label {
+  color: var(--rd-inv-sub);
+}
+html[data-theme] .rd-metric-num {
+  font-size: 30px;
+  font-weight: 650;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+html[data-theme] .rd-metric.dark .rd-metric-num {
+  color: var(--rd-inv-fg);
+}
+html[data-theme] .rd-metric-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+  font-size: 11.5px;
+  color: var(--text-4);
+}
+html[data-theme] .rd-metric.dark .rd-metric-foot {
+  color: var(--rd-inv-sub);
+}
+html[data-theme] .rd-delta {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--success-soft, rgba(47, 158, 104, 0.12));
+  color: var(--success, #2f9e68);
+  font-weight: 600;
+}
+/* 迷你柱图：不引图表库，纯 CSS，够表达"最近几次的量" */
+html[data-theme] .rd-spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 26px;
+  margin-top: 2px;
+}
+html[data-theme] .rd-spark i {
+  flex: 1;
+  border-radius: 3px 3px 1px 1px;
+  background: color-mix(in srgb, var(--primary) 26%, transparent);
+  min-height: 3px;
+}
+html[data-theme] .rd-spark i.on {
+  background: var(--primary);
+}
+html[data-theme] .rd-metric.dark .rd-spark i {
+  background: rgba(255, 255, 255, 0.18);
+}
+html[data-theme] .rd-metric.dark .rd-spark i.on {
+  background: var(--rd-inv-fg);
+}
+
+/* 顶栏右侧控件统一高度：参考稿里那一排控件是"看起来一样高"的，
+   而原来图标按钮、算力胶囊、文字按钮各写各的 padding，摆一起参差不齐。 */
+html[data-theme] .topbar-right > * {
+  flex: none;
+}
+html[data-theme] .topbar-right .btn-icon-light,
+html[data-theme] .topbar-right .account-trigger {
+  width: 32px;
+  height: 32px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border-radius: var(--radius-sm);
+}
+html[data-theme] .topbar-right .pill-light,
+html[data-theme] .topbar-right .btn-primary {
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* 最近项目：没有缩略图时的字母卡给一层渐变，别是一张空白的灰框 */
+html[data-theme] .wk-project {
+  border-radius: var(--radius-lg);
+  transition: transform 0.16s var(--rd-ease), box-shadow 0.16s var(--rd-ease), border-color 0.16s var(--rd-ease);
+}
+html[data-theme] .wk-project:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
+}
+html[data-theme] .wk-project-letter {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary) 12%, transparent),
+    color-mix(in srgb, var(--primary) 3%, transparent)
+  );
+  color: color-mix(in srgb, var(--primary) 55%, var(--text-4));
+  font-size: 34px;
+  font-weight: 650;
+}
+/* 灵感卡：参考稿的卡片是"图占满 + 角标"，这边保持但把圆角与角标统一 */
+html[data-theme] .wk-insp {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+html[data-theme] .wk-insp-cover {
+  border-radius: var(--radius-lg);
+}
+html[data-theme] .wk-insp-cat,
+html[data-theme] .wk-insp-hot {
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+}
+

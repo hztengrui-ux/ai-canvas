@@ -1,0 +1,513 @@
+/* ============================================================
+   模板库
+   布局参考 LOOM42：居中搜索 Hero / 模板大卡 / 能力小卡 / 分类横滑行
+   ============================================================ */
+.tpl {
+  height: 100%;
+  overflow-y: auto;
+  padding: 40px 32px 56px;
+}
+
+/* ---------- Hero + 搜索 ---------- */
+.tpl-hero {
+  max-width: 720px;
+  margin: 0 auto 44px;
+  text-align: center;
+}
+
+.tpl-hero-title {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.tpl-hero-sub {
+  margin: 12px 0 26px;
+  font-size: 13.5px;
+  color: var(--text-3);
+}
+
+.tpl-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 6px 6px 18px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+  transition: border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.tpl-search:focus-within {
+  border-color: #bcd0f2;
+  box-shadow: 0 6px 24px rgba(37, 99, 235, 0.12);
+}
+
+.tpl-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.tpl-search input::placeholder {
+  color: var(--text-4);
+}
+
+.tpl-search-btn {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.tpl-search-btn:hover {
+  background: var(--primary-pressed);
+}
+
+/* ---------- 区块 ---------- */
+.tpl-section {
+  max-width: 1180px;
+  margin: 0 auto 46px;
+}
+
+.tpl-sec-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 16px;
+}
+
+.tpl-sec-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.tpl-sec-head h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.tpl-sec-sub {
+  font-size: 12px;
+  color: var(--text-4);
+}
+
+.tpl-empty {
+  padding: 40px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-4);
+}
+
+/* ---------- 主推模板大卡 ---------- */
+.tpl-featured {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 14px;
+}
+
+.tpl-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  overflow: hidden;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.tpl-card:hover {
+  transform: translateY(-3px);
+  border-color: #bcd0f2;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.1);
+}
+
+.tpl-card-art {
+  position: relative;
+  display: block;
+  height: 132px;
+  overflow: hidden;
+  background: #eceff4;
+}
+
+/* 用渐变拟造缩略图质感，避免大面积灰块 */
+.tpl-card-art-inner {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.9), transparent 55%),
+    linear-gradient(135deg, #c7d7f5, #9fb8e6 55%, #7f9fd6);
+}
+
+.art-clothes-model .tpl-card-art-inner {
+  background:
+    radial-gradient(circle at 28% 22%, rgba(255, 255, 255, 0.92), transparent 52%),
+    linear-gradient(135deg, #d8e4fa, #a8c0ea 55%, #86a4dd);
+}
+
+.art-style-reference .tpl-card-art-inner {
+  background:
+    radial-gradient(circle at 70% 25%, rgba(255, 255, 255, 0.85), transparent 55%),
+    linear-gradient(135deg, #f0e2d4, #dcc4ae 55%, #c2a288);
+}
+
+.art-detail-page .tpl-card-art-inner {
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.9), transparent 55%),
+    linear-gradient(135deg, #d6ecdf, #aed4c2 55%, #8cbba4);
+}
+
+.art-image-replica .tpl-card-art-inner {
+  background:
+    radial-gradient(circle at 60% 28%, rgba(255, 255, 255, 0.88), transparent 55%),
+    linear-gradient(135deg, #e3dcf5, #c3b6e6 55%, #a294d2);
+}
+
+.tpl-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px 16px;
+}
+
+.tpl-card-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.tpl-badge {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--text);
+  color: var(--surface);
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 600;
+}
+
+.tpl-badge.hot {
+  background: var(--brand);
+  color: #fff;
+}
+
+.tpl-card-desc {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-3);
+}
+
+/* ---------- 能力小卡 ---------- */
+.tpl-caps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.tpl-cap {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.tpl-cap:hover {
+  transform: translateY(-2px);
+  border-color: #bcd0f2;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+}
+
+.tpl-cap-icon {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: #f2f5f9;
+  color: var(--text-2);
+  font-size: 16px;
+  flex-shrink: 0;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.tpl-cap:hover .tpl-cap-icon {
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+
+.tpl-cap-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tpl-cap-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.tpl-cap-sub {
+  font-size: 11px;
+  color: var(--text-4);
+}
+
+/* ---------- 分类横滑行 ---------- */
+.tpl-row {
+  display: grid;
+  grid-template-columns: 210px 1fr;
+  gap: 14px;
+  margin-bottom: 14px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.tpl-row-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--brand-deep);
+}
+
+.tpl-row-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e8effa;
+}
+
+.tpl-row-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.tpl-row-chip {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #a9c0dd;
+  font-size: 10.5px;
+}
+
+.tpl-row-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: auto;
+  padding: 9px;
+  border: none;
+  border-radius: 9px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.tpl-row-btn:hover {
+  background: #3b82f6;
+}
+
+/* 横向缩略图流 */
+.tpl-strip {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scrollbar-width: thin;
+}
+
+.tpl-strip::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tpl-strip::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #dfe4ec;
+}
+
+.tpl-thumb {
+  position: relative;
+  flex: 0 0 128px;
+  height: 128px;
+  padding: 0;
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #eef1f6;
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.tpl-thumb:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14);
+}
+
+.tpl-thumb-art {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.92), transparent 58%),
+    linear-gradient(
+      135deg,
+      hsl(var(--h) 46% 88%),
+      hsl(var(--h) 42% 76%) 60%,
+      hsl(var(--h) 38% 66%)
+    );
+}
+
+.tpl-thumb-label {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 7px;
+  padding: 3px 8px;
+  border-radius: 7px;
+  background: rgba(15, 23, 42, 0.55);
+  color: #fff;
+  font-size: 10.5px;
+  line-height: 1.4;
+  text-align: left;
+  backdrop-filter: blur(4px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- 暗色 ---------- */
+body.dark .tpl-hero-title,
+body.dark .tpl-sec-head h2,
+body.dark .tpl-card-title,
+body.dark .tpl-cap-title {
+  color: #e6e8ec;
+}
+
+body.dark .tpl-hero-sub,
+body.dark .tpl-sec-sub,
+body.dark .tpl-card-desc,
+body.dark .tpl-cap-sub {
+  color: #6b7280;
+}
+
+body.dark .tpl-search,
+body.dark .tpl-card,
+body.dark .tpl-cap,
+body.dark .tpl-row {
+  background: #0d0d0d;
+  border-color: #2e2e2e;
+  box-shadow: none;
+}
+
+body.dark .tpl-search input {
+  color: #e6e8ec;
+}
+
+body.dark .tpl-search:focus-within {
+  border-color: rgba(96, 165, 250, 0.45);
+}
+
+body.dark .tpl-cap-icon {
+  background: #1a1a1a;
+  color: #9aa0aa;
+}
+
+body.dark .tpl-card-art,
+body.dark .tpl-thumb {
+  background: #141414;
+}
+
+body.dark .tpl-thumb-art {
+  background:
+    radial-gradient(circle at 32% 26%, rgba(255, 255, 255, 0.18), transparent 58%),
+    linear-gradient(
+      135deg,
+      hsl(var(--h) 30% 30%),
+      hsl(var(--h) 28% 22%) 60%,
+      hsl(var(--h) 26% 16%)
+    );
+}
+
+body.dark .tpl-strip::-webkit-scrollbar-thumb {
+  background: #2e2e2e;
+}
+
+body.dark .tpl-empty {
+  border-color: #2e2e2e;
+  color: #5f6672;
+}
+
+/* 示意图（对应 LOOM42 的 16:9 整图）；图缺失时下面的渐变层会露出来 */
+.tpl-card-img,
+.tpl-thumb-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 1;
+}
+
+.tpl-card-img {
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tpl-card:hover .tpl-card-img {
+  transform: scale(1.04);
+}

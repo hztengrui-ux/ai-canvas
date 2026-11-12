@@ -1,0 +1,48 @@
+{
+  "name": "ai-canvas",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "跨多多科技 AI 创作台（无限画布 · Vue3 + Element Plus + Express，支持闭源/开源多模型）",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "server": "node server/index.js",
+    "start": "npm run build && npm run server",
+    "desktop": "npm run build && electron .",
+    "desktop:dev": "cross-env AI_CANVAS_DEV_URL=http://127.0.0.1:5180 electron .",
+    "dev:desktop": "node tools/dev-start.mjs",
+    "dev:status": "node tools/dev-start.mjs --status",
+    "dev:stop": "node tools/dev-start.mjs --stop",
+    "dist": "npm run build && electron-builder --config electron-builder.config.cjs",
+    "dist:oem-a": "cross-env BRAND=oem-a npm run dist",
+    "dist:oem-b": "cross-env BRAND=oem-b npm run dist",
+    "portable": "npm run build && electron-builder --config electron-builder.config.cjs && node scripts/make-portable.mjs && node scripts/__verify-packaged-app.mjs",
+    "release:upload": "node scripts/upload-release.mjs",
+    "test": "node scripts/run-tests.mjs",
+    "test:brand": "node scripts/__brand.config.test.mjs",
+    "test:credits": "node scripts/run-tests.mjs",
+    "test:payments": "node scripts/run-tests.mjs"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "@napi-rs/keyring": "^2.0.0",
+    "@vue-flow/background": "^1.3.2",
+    "@vue-flow/controls": "^1.1.3",
+    "@vue-flow/core": "^1.48.2",
+    "@vue-flow/minimap": "^1.5.4",
+    "electron-updater": "^6.8.9",
+    "element-plus": "^2.9.0",
+    "express": "^4.21.0",
+    "vue": "^3.5.0"
+  },
+  "devDependencies": {
+    "@electron/fuses": "^2.1.3",
+    "@vitejs/plugin-vue": "^5.2.0",
+    "cross-env": "^7.0.3",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "vite": "^6.0.0"
+  }
+}

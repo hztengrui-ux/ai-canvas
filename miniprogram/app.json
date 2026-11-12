@@ -1,0 +1,44 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/home/home",
+    "pages/gallery/gallery",
+    "pages/create/create",
+    "pages/job/job",
+    "pages/me/me",
+    "pages/recharge/recharge"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#ECEFF9",
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "跨多多 AI 创作台",
+    "backgroundColor": "#ECEFF9",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#838CA0",
+    "selectedColor": "#15171E",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/gallery/gallery",
+        "text": "看图"
+      },
+      {
+        "pagePath": "pages/create/create",
+        "text": "出图"
+      },
+      {
+        "pagePath": "pages/me/me",
+        "text": "我的"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

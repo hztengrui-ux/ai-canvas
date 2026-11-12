@@ -1,0 +1,100 @@
+<view class="page">
+  <view class="card job-head">
+    <view class="row between">
+      <view class="col flex-1">
+        <view class="h2">{{stateText}}</view>
+        <view class="muted tiny mt-4 ellipsis">任务 {{id}}</view>
+      </view>
+      <view class="state-pill {{state}}">{{stateText}}</view>
+    </view>
+
+    <view class="bar mt-24" wx:if="{{!isTerminal}}">
+      <view class="bar-sweep"></view>
+    </view>
+    <view class="bar mt-24" wx:if="{{state === 'done'}}">
+      <view class="bar-fill bar-fill-full"></view>
+    </view>
+
+    <view class="row between mt-16">
+      <text class="muted tiny">已用时 {{elapsedText}}</text>
+      <text wx:if="{{job && job.cost}}" class="muted tiny">消耗 {{job.cost}} {{creditName}}</text>
+    </view>
+    <view wx:if="{{netHint}}" class="net-hint tiny">{{netHint}}</view>
+  </view>
+
+  <view class="section-head">
+    <view class="h3">进度</view>
+    <text class="muted tiny">最近 3 条</text>
+  </view>
+  <view class="card progress-card">
+    <view wx:if="{{progressList.length}}" class="progress-list">
+      <view class="progress-row" wx:for="{{progressList}}" wx:key="key">
+        <view class="progress-dot"></view>
+        <view class="col flex-1">
+          <text class="progress-text">{{item.text}}</text>
+          <text wx:if="{{item.timeText}}" class="muted tiny">{{item.timeText}}</text>
+        </view>
+      </view>
+    </view>
+    <view wx:else class="empty">{{state === 'queued' ? '已排队，等待服务端分配…' : '等待进度回传…'}}</view>
+
+    <button
+      wx:if="{{!isTerminal}}"
+      class="btn btn-ghost btn-sm mt-16 {{canceling || cancelRequested ? 'is-busy' : ''}}"
+      bindtap="cancelJob"
+    >{{canceling ? '取消中…' : (cancelRequested ? '等待服务端确认…' : '取消任务')}}</button>
+  </view>
+
+  <view wx:if="{{state === 'error'}}" class="card result-error mt-24">
+    <view class="h3 danger-text">生成失败</view>
+    <view class="sub small mt-8">{{errorText || '服务端未返回具体原因'}}</view>
+    <view class="row mt-16">
+      <button class="btn btn-primary btn-sm" bindtap="goCreate">返回重试</button>
+      <button class="btn btn-ghost btn-sm ml-16" bindtap="goHome">回首页</button>
+    </view>
+  </view>
+
+  <view wx:if="{{state === 'canceled'}}" class="card mt-24">
+    <view class="h3">已取消</view>
+    <view class="muted small mt-8">任务已取消，未完成的算力按服务端规则退回。</view>
+    <view class="row mt-16">
+      <button class="btn btn-primary btn-sm" bindtap="goCreate">重新生成</button>
+      <button class="btn btn-ghost btn-sm ml-16" bindtap="goHome">回首页</button>
+    </view>
+  </view>
+
+  <block wx:if="{{state === 'done'}}">
+    <view class="section-head">
+      <view class="h3">结果图</view>
+      <text class="muted tiny">共 {{images.length}} 张 · 长按可保存</text>
+    </view>
+    <view class="result-grid">
+      <view
+        class="result-item {{images.length === 1 ? 'result-item-full' : ''}}"
+        wx:for="{{images}}"
+        wx:key="file"
+        data-index="{{index}}"
+        bindtap="previewResult"
+        bindlongpress="saveResult"
+      >
+        <image class="result-img" src="{{item.fullUrl}}" mode="aspectFill" lazy-load="{{true}}"></image>
+      </view>
+    </view>
+
+    <view class="card mt-24">
+      <view class="row between">
+        <text class="muted small">本次消耗</text>
+        <text class="small ink">{{costText}}</text>
+      </view>
+      <view class="row between mt-8">
+        <text class="muted small">剩余余额</text>
+        <text class="small ink">{{balanceText}}</text>
+      </view>
+    </view>
+
+    <view class="row mt-24">
+      <button class="btn btn-primary flex-1" bindtap="goCreate">再生成一张</button>
+      <button class="btn btn-ghost flex-1 ml-16" bindtap="goGallery">去图库</button>
+    </view>
+  </block>
+</view>

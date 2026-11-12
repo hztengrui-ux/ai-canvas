@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="aurora" class="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>跨多多 AI 创作台 · 界面总览</title>
+<link rel="stylesheet" href="/ai-canvas/src/themes.css" />
+<style>
+  /* 本页专用：只做总览壳，界面内部一律用主题 token 渲染 */
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1440px; margin: 0 auto; padding: 24px 28px 80px; }
+
+  /* ---------- 顶栏 ---------- */
+  .top {
+    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+    padding-bottom: 18px; border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; background: var(--bg); z-index: 20; padding-top: 8px;
+  }
+  .top h1 { font-size: 19px; margin: 0; font-weight: 650; letter-spacing: .2px; }
+  .top .sub { color: var(--text-3); font-size: 12.5px; margin-top: 3px; }
+  .spacer { flex: 1; }
+
+  .seg { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border);
+         border-radius: var(--radius); padding: 4px; }
+  .seg button {
+    border: 0; background: transparent; color: var(--text-2); cursor: pointer;
+    padding: 7px 13px; border-radius: calc(var(--radius) - 4px); font-size: 13px;
+    display: flex; align-items: center; gap: 7px; font-family: inherit;
+  }
+  .seg button:hover { background: var(--surface-hover); color: var(--text-1); }
+  .seg button.on { background: var(--primary); color: #fff; font-weight: 600; }
+  .dot3 { display: flex; gap: 3px; }
+  .dot3 i { width: 8px; height: 8px; border-radius: 50%; display: block; }
+
+  .icon-btn {
+    border: 1px solid var(--border); background: var(--surface); color: var(--text-2);
+    border-radius: var(--radius); padding: 8px 14px; cursor: pointer; font-size: 13px;
+    font-family: inherit;
+  }
+  .icon-btn:hover { background: var(--surface-hover); color: var(--text-1); }
+
+  /* ---------- 分组 ---------- */
+  .group { margin-top: 38px; }
+  .group-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; }
+  .group-head h2 { font-size: 15px; margin: 0; font-weight: 650; }
+  .group-head .cnt { color: var(--text-3); font-size: 12.5px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 18px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); overflow: hidden; cursor: pointer;
+    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+  }
+  .card:hover { transform: translateY(-3px); border-color: var(--border-strong); box-shadow: var(--shadow-md); }
+
+  /* ---------- 迷你界面窗口 ---------- */
+  .mini {
+    height: 208px; background: var(--canvas-bg, var(--bg)); position: relative;
+    overflow: hidden; border-bottom: 1px solid var(--border);
+    display: flex; flex-direction: column;
+  }
+  .m-bar { height: 26px; display: flex; align-items: center; gap: 7px; padding: 0 10px;
+           background: var(--surface); border-bottom: 1px solid var(--border); flex: none; }
+  .m-bar .tl { width: 42px; height: 5px; border-radius: 3px; background: var(--primary); opacity: .85; }
+  .m-bar .sp { flex: 1; }
+  .m-bar .pill { height: 13px; border-radius: 7px; background: var(--surface-hover);
+                 border: 1px solid var(--border); }
+  .m-body { flex: 1; display: flex; min-height: 0; }
+  .m-side { width: 58px; flex: none; background: var(--sidebar-bg); padding: 8px 6px; display: flex;
+            flex-direction: column; gap: 6px; }
+  .m-side i { height: 5px; border-radius: 3px; background: var(--sidebar-item); opacity: .55; display: block; }
+  .m-side i:first-child { background: var(--primary); opacity: .9; }
+  .m-main { flex: 1; padding: 10px 11px; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+
+  /* 迷你零件 */
+  .row { display: flex; gap: 6px; }
+  .blk { background: var(--surface); border: 1px solid var(--border); border-radius: 7px; }
+  .ln { height: 5px; border-radius: 3px; background: var(--text-4); opacity: .35; }
+  .ln.s { width: 46%; } .ln.m { width: 68%; } .ln.f { width: 100%; }
+  .ln.b { background: var(--primary); opacity: .5; }
+  .ttl { font-size: 11px; font-weight: 650; color: var(--text-1); }
+  .mut { font-size: 10px; color: var(--text-3); }
+  .gap { flex: 1; }
+  .cen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+
+  .btn-m { height: 22px; border-radius: 7px; background: var(--primary); color: #fff;
+           font-size: 10.5px; font-weight: 600; display: flex; align-items: center;
+           justify-content: center; padding: 0 12px; }
+  .btn-g { height: 22px; border-radius: 7px; border: 1px solid var(--border);
+           background: var(--surface); font-size: 10.5px; display: flex; align-items: center;
+           justify-content: center; color: var(--text-2); padding: 0 10px; }
+
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+  .thumb { aspect-ratio: 1; border-radius: 7px; background: var(--surface-hover);
+           border: 1px solid var(--border); }
+  .thumb.g { background: linear-gradient(140deg, var(--primary-soft), var(--surface-hover)); }
+  .thumb.d { background: linear-gradient(140deg, var(--success-soft), var(--surface-hover)); }
+  .thumb.w { background: linear-gradient(140deg, var(--warning-soft), var(--surface-hover)); }
+
+  .chip { font-size: 9.5px; padding: 2.5px 7px; border-radius: 20px; background: var(--surface-hover);
+          border: 1px solid var(--border); color: var(--text-2); }
+  .chip.on { background: var(--primary-soft); border-color: var(--primary); color: var(--primary); }
+
+  .stat { padding: 7px 8px; border-radius: 8px; background: var(--surface);
+          border: 1px solid var(--border); }
+  .stat b { font-size: 13px; display: block; color: var(--text-1); }
+  .stat span { font-size: 9px; color: var(--text-3); }
+
+  /* 画布里的节点与连线 */
+  .cv { position: relative; flex: 1; min-height: 0; }
+  .nd { position: absolute; width: 54px; padding: 5px 6px; border-radius: 7px;
+        background: var(--surface); border: 1px solid var(--border-strong); }
+  .nd .nh { height: 3.5px; border-radius: 2px; background: var(--primary); opacity: .7; margin-bottom: 3px; }
+  .nd .nl { height: 3px; border-radius: 2px; background: var(--text-4); opacity: .3; }
+  .nd.run { border-color: var(--info); box-shadow: 0 0 0 2px var(--info-soft); }
+  .nd.done { border-color: var(--success); }
+  .nd.err { border-color: var(--danger); box-shadow: 0 0 0 2px var(--danger-soft); }
+  .nd.off { opacity: .45; border-style: dashed; }
+  .wire { position: absolute; height: 1.5px; background: var(--primary); opacity: .5;
+          transform-origin: 0 50%; border-radius: 2px; }
+
+  .taskb { display: flex; align-items: center; gap: 7px; padding: 5px 7px; border-radius: 7px;
+           background: var(--surface); border: 1px solid var(--border); }
+  .taskb .dg { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+  .taskb .tw { flex: 1; height: 4px; border-radius: 2px; background: var(--text-4); opacity: .3; }
+
+  .bub { max-width: 76%; padding: 5px 8px; border-radius: 9px; font-size: 9.5px; }
+  .bub.l { background: var(--surface); border: 1px solid var(--border); color: var(--text-2); }
+  .bub.r { background: var(--primary-soft); border: 1px solid var(--primary); color: var(--text-1);
+           align-self: flex-end; }
+
+  /* 徽章与卡片脚 */
+  .foot { padding: 11px 13px 13px; }
+  .frow { display: flex; align-items: center; gap: 8px; }
+  .fname { font-size: 13.5px; font-weight: 620; color: var(--text-1); }
+  .fcode { font-size: 10.5px; color: var(--text-4); font-family: ui-monospace, Consolas, monospace; }
+  .badge { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 600; }
+  .b-ok { background: var(--success-soft); color: var(--success); }
+  .b-part { background: var(--warning-soft); color: var(--warning); }
+  .b-no { background: var(--danger-soft); color: var(--danger); }
+  .blocks { margin-top: 8px; font-size: 11.5px; color: var(--text-3); line-height: 1.65; }
+
+  /* 弹窗 */
+  .mask { position: fixed; inset: 0; background: rgba(0,0,0,.66); z-index: 60;
+          display: none; align-items: center; justify-content: center; padding: 40px;
+          backdrop-filter: blur(4px); }
+  .mask.on { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border-strong);
+           border-radius: var(--radius-xl); width: min(880px, 100%); max-height: 90vh;
+           overflow: auto; box-shadow: var(--shadow-md); }
+  .modal .mh { padding: 18px 22px; border-bottom: 1px solid var(--border);
+               display: flex; align-items: center; gap: 12px; }
+  .modal .mh h3 { margin: 0; font-size: 16px; font-weight: 650; }
+  .modal .mc { padding: 20px 22px 26px; }
+  .big { height: 460px; border-radius: var(--radius); border: 1px solid var(--border);
+         overflow: hidden; background: var(--canvas-bg, var(--bg)); }
+  .big .mini { height: 100%; border-bottom: 0; }
+  .spec { margin-top: 18px; }
+  .spec h4 { font-size: 12.5px; margin: 0 0 8px; color: var(--text-2); font-weight: 650; }
+  .spec ul { margin: 0; padding-left: 18px; color: var(--text-2); font-size: 13px; line-height: 1.85; }
+  .kv { display: grid; grid-template-columns: 96px 1fr; gap: 6px 14px; font-size: 13px;
+        color: var(--text-2); margin-top: 14px; }
+  .kv b { color: var(--text-3); font-weight: 500; }
+  .close { margin-left: auto; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>跨多多 AI 创作台 · 界面总览</h1>
+      <div class="sub">22 个界面单元 · 点任意一张可看大图与规格 · 切换主题即时换肤</div>
+    </div>
+    <div class="spacer"></div>
+    <div class="seg" id="themes"></div>
+    <button class="icon-btn" id="dark">☾ 暗 / ☀ 亮</button>
+  </div>
+
+  <div id="groups"></div>
+</div>
+
+<div class="mask" id="mask">
+  <div class="modal">
+    <div class="mh">
+      <h3 id="mt">—</h3>
+      <span class="badge" id="mb"></span>
+      <button class="icon-btn close" id="mc">关闭</button>
+    </div>
+    <div class="mc"><div class="big" id="mbig"></div><div id="mspec"></div></div>
+  </div>
+</div>
+
+<script>
+const THEMES = [
+  { id: "aurora",   name: "极光玻璃",   sw: ["#0B0D14", "#6D5EF8", "#22D3EE"], dark: true },
+  { id: "atelier",  name: "画布工作室", sw: ["#FAF8F5", "#FF5A1F", "#1B1A17"], dark: false },
+  { id: "momentum", name: "流光灵动",   sw: ["#FFFFFF", "#4F46E5", "#0EA5E9"], dark: false },
+  { id: "classic",  name: "经典蓝",     sw: ["#0A1F3D", "#2563EB", "#F3F4F6"], dark: false }
+];
+
+/* ---------- 迷你渲染片段 ---------- */
+const bar = (pills = 2) => `<div class="m-bar"><div class="tl"></div><div class="sp"></div>
+  ${Array.from({ length: pills }, (_, i) => `<div class="pill" style="width:${i ? 22 : 34}px"></div>`).join("")}</div>`;
+const side = (n = 5) => `<div class="m-side">${Array.from({ length: n }, () => "<i></i>").join("")}</div>`;
+const main = (inner, noSide) => `<div class="m-body">${noSide ? "" : side()}<div class="m-main">${inner}</div></div>`;
+
+const S = [];
+const add = (o) => { S.push(o); return o; };
+
+/* ============ A · 主视图 ============ */
+add({ g: "A · 主视图", id: "A1", name: "登录", code: "LoginView.vue · 162 行", st: "ok",
+  blocks: ["品牌区 logo + 产品名", "账号 / 密码输入", "登录按钮 + 校验错误条"],
+  spec: ["两种形态：内嵌主窗口 / IS_LOGIN_WINDOW 独立登录窗（不加载外壳，启动更快）",
+         "状态：默认、校验失败、登录中（按钮 loading）、服务端拒绝"],
+  r: () => `<div class="mini"><div class="cen">
+      <div style="width:26px;height:26px;border-radius:9px;background:var(--primary)"></div>
+      <div class="ttl">跨多多 AI 创作台</div>
+      <div style="width:170px"><div class="blk" style="padding:6px 8px;margin-bottom:5px"><div class="ln m"></div></div>
+      <div class="blk" style="padding:6px 8px;margin-bottom:7px"><div class="ln s"></div></div></div>
+      <div class="btn-m" style="width:170px">登 录</div>
+      <div class="mut">Ctrl+Enter 快速提交</div>
+    </div></div>` });
+
+add({ g: "A · 主视图", id: "A2", name: "启动闪屏", code: "BootSplash.vue · 35 行", st: "ok",
+  blocks: ["居中 logo", "加载进度", "一句产品语"],
+  spec: ["验收：不闪白、不超过 1.2s 自动消失"],
+  r: () => `<div class="mini"><div class="cen">
+      <div style="width:34px;height:34px;border-radius:11px;background:var(--accent-grad,var(--primary))"></div>
+      <div class="ttl" style="letter-spacing:2px">KUADUO</div>
+      <div style="width:110px;height:3px;border-radius:2px;background:var(--surface-hover);overflow:hidden">
+        <div style="width:62%;height:100%;background:var(--primary)"></div></div>
+      <div class="mut">正在准备创作环境…</div>
+    </div></div>` });
+
+add({ g: "A · 主视图", id: "A3", name: "工作台（首页）", code: "HomeView.vue · 230 行", st: "ok",
+  blocks: ["创作输入框（多行 + 发送）", "快捷入口", "最近项目网格", "场景模板", "已接入模型展示行"],
+  spec: ["状态：场景切换「该场景下暂无模板」空态",
+         "验收：输入框 Ctrl+Enter 发送；项目卡点击进入创作台"],
+  r: () => `<div class="mini">${bar(3)}${main(`
+      <div class="blk" style="padding:8px 9px">
+        <div class="ln f" style="margin-bottom:4px"></div><div class="ln m" style="margin-bottom:6px"></div>
+        <div style="display:flex;justify-content:flex-end"><div class="btn-m" style="height:17px;padding:0 9px">生成</div></div>
+      </div>
+      <div class="row"><span class="chip on">文生图</span><span class="chip">图生图</span><span class="chip">批量</span></div>
+      <div class="mut">最近项目</div>
+      <div class="grid3"><div class="thumb g"></div><div class="thumb"></div><div class="thumb d"></div></div>
+      <div class="gap"></div>
+      <div class="row" style="align-items:center"><span class="mut">已接入</span>
+        <span class="chip">万相</span><span class="chip">即梦</span><span class="chip">GPT</span><span class="chip">Gemini</span></div>`)}</div>` });
+
+add({ g: "A · 主视图", id: "A4", name: "我的项目", code: "ProjectsView.vue · 77 行", st: "part",
+  blocks: ["搜索框", "新建卡片", "项目网格（缩略 + 名称 + 时间）", "删除按钮"],
+  spec: ["⚠ 无空态：一个项目都没有时，中间大片空白（缺口 G1）",
+         "⚠ 无重命名 / 复制 / 排序 —— 8 个主视图里最薄的一个",
+         "验收：删除有二次确认；搜索按名称过滤"],
+  r: () => `<div class="mini">${bar(2)}${main(`
+      <div class="blk" style="padding:5px 8px"><div class="ln s"></div></div>
+      <div class="grid3">
+        <div class="thumb" style="border-style:dashed;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:15px">+</div>
+        <div class="thumb g"></div><div class="thumb"></div></div>
+      <div class="row" style="justify-content:space-between"><div class="ln m"></div><div class="mut">2 个项目</div></div>
+      <div class="gap"></div>
+      <div class="cen"><div class="mut" style="color:var(--warning)">⚠ 列表为空时此处无任何提示</div></div>`)}</div>` });
+
+add({ g: "A · 主视图", id: "A5", name: "AI 创作台（无限画布）", code: "StudioView + NodeCanvas · 2318 行", st: "ok",
+  blocks: ["顶栏（品牌 / 模型选择器 / 撤销重做 / 模式开关 / 主���切换）", "左侧浮层（节点工具 + 提示词预设）",
+           "画布（7 种节点 + 连线）", "右侧属性栏", "底部任务条"],
+  spec: ["7 种节点：画面描述 / 风格 / 参考图 / 产品图 / 执行 / 结果 / 作品组",
+         "缩放三档：远（色块）· 中 · 近（完整参数）",
+         "节点 5 态：idle / running / done / error / canceled"],
+  r: () => `<div class="mini">
+    <div class="m-bar" style="gap:5px"><div class="tl"></div>
+      <div class="pill" style="width:52px"></div><div class="sp"></div>
+      <div class="pill" style="width:40px;background:var(--primary-soft);border-color:var(--primary)"></div>
+      <div class="pill" style="width:22px"></div><div class="pill" style="width:22px"></div></div>
+    <div class="m-body">
+      <div class="m-side" style="width:34px"><i style="background:var(--primary);opacity:.9"></i><i></i><i></i><i></i></div>
+      <div class="m-main" style="padding:0;position:relative">
+        <div class="cv">
+          <div class="wire" style="left:60px;top:38px;width:44px;transform:rotate(18deg)"></div>
+          <div class="wire" style="left:112px;top:44px;width:42px;transform:rotate(-12deg)"></div>
+          <div class="wire" style="left:154px;top:40px;width:40px;transform:rotate(9deg)"></div>
+          <div class="nd" style="left:8px;top:26px"><div class="nh"></div><div class="nl"></div><div class="nl" style="width:70%"></div></div>
+          <div class="nd" style="left:110px;top:16px"><div class="nh"></div><div class="nl"></div></div>
+          <div class="nd run" style="left:156px;top:30px"><div class="nh" style="background:var(--info)"></div><div class="nl"></div></div>
+          <div class="nd done" style="left:212px;top:20px;width:44px"><div class="nh" style="background:var(--success)"></div><div class="nl"></div></div>
+          <div class="nd err" style="left:212px;top:74px;width:44px"><div class="nh" style="background:var(--danger)"></div><div class="nl"></div></div>
+          <div class="nd off" style="left:110px;top:78px"><div class="nh"></div><div class="nl"></div></div>
+        </div>
+        <div style="border-top:1px solid var(--border);padding:5px 7px;display:flex;gap:6px;align-items:center">
+          <div class="dg" style="width:6px;height:6px;border-radius:50%;background:var(--info)"></div>
+          <div class="ln s" style="flex:1"></div><div class="mut">生成中 42%</div></div>
+      </div>
+      <div class="m-side" style="width:52px;background:var(--surface);padding:7px 6px">
+        <div class="ttl" style="font-size:9.5px;margin-bottom:5px">属性</div>
+        <div class="ln f" style="margin-bottom:4px"></div><div class="ln m" style="margin-bottom:4px"></div>
+        <div class="ln s"></div><div class="gap"></div>
+        <div class="btn-g" style="height:16px;font-size:9px">重新生成</div></div>
+    </div></div>` });
+
+add({ g: "A · 主视图", id: "A6", name: "模板库", code: "TemplatesView.vue · 247 行", st: "ok",
+  blocks: ["搜索", "精选区", "能力 chips", "模板行面板（名称 + chips + 横向 strip）"],
+  spec: ["状态：「没有匹配的模板」空态",
+         "验收：点击模板直接铺到画布"],
+  r: () => `<div class="mini">${bar(2)}${main(`
+      <div class="blk" style="padding:5px 8px"><div class="ln s"></div></div>
+      <div class="thumb g" style="aspect-ratio:16/6;margin-bottom:2px"></div>
+      <div class="row"><span class="chip on">全部</span><span class="chip">毛衫</span><span class="chip">模特</span><span class="chip">场景</span></div>
+      <div class="mut">毛衫印花</div>
+      <div class="row"><div class="thumb" style="width:34px"></div><div class="thumb" style="width:34px"></div>
+        <div class="thumb" style="width:34px"></div><div class="thumb" style="width:34px"></div></div>
+      <div class="gap"></div><div class="mut">共 11 张模板</div>`)}</div>` });
+
+add({ g: "A · 主视图", id: "A7", name: "作品库", code: "ReviewView.vue · 246 行", st: "ok",
+  blocks: ["标题 + 计数", "网格 / 对比双模式", "搜索 + 类型 + 模型筛选", "批量下载 / 打包 ZIP", "大图 lightbox", "空态"],
+  spec: ["验收：批量选中 → 打包 ZIP 中文名正确（已用 python zipfile 真解压校验）",
+         "验收：定位能跳回画布并居中该节点"],
+  r: () => `<div class="mini">${bar(3)}${main(`
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <div class="ttl">作品库</div>
+        <div class="row"><span class="chip on">网格</span><span class="chip">对比</span></div></div>
+      <div class="mut">共 128 条 · 筛选出 24 条</div>
+      <div class="row"><span class="chip">全部类型</span><span class="chip">万相</span><span class="chip">近 7 天</span></div>
+      <div class="grid4"><div class="thumb g"></div><div class="thumb d"></div><div class="thumb w"></div><div class="thumb"></div>
+        <div class="thumb"></div><div class="thumb d"></div><div class="thumb g"></div><div class="thumb"></div></div>
+      <div class="gap"></div>
+      <div class="row"><div class="btn-g" style="flex:1">下载所选</div><div class="btn-m" style="flex:1">打包 ZIP</div></div>`)}</div>` });
+
+add({ g: "A · 主视图", id: "A8", name: "安全记录", code: "AuditView.vue · 116 行", st: "ok",
+  blocks: ["4 个统计卡", "筛选", "记录列表", "加载中 / 暂无记录"],
+  spec: ["待确认：筛选后统计卡是否应跟着变（当前是全量统计）"],
+  r: () => `<div class="mini">${bar(2)}${main(`
+      <div class="grid4">
+        <div class="stat"><b>12</b><span>今日</span></div><div class="stat"><b>86</b><span>本周</span></div>
+        <div class="stat"><b>3</b><span>异常</span></div><div class="stat"><b>240</b><span>点数</span></div></div>
+      <div class="row"><span class="chip on">全部</span><span class="chip">生成</span><span class="chip">登录</span><span class="chip">支付</span></div>
+      <div class="taskb"><div class="dg" style="background:var(--success)"></div><div class="tw"></div><div class="mut">10:24</div></div>
+      <div class="taskb"><div class="dg" style="background:var(--warning)"></div><div class="tw"></div><div class="mut">10:19</div></div>
+      <div class="taskb"><div class="dg" style="background:var(--success)"></div><div class="tw"></div><div class="mut">10:02</div></div>`)}</div>` });
+
+/* ============ B · 创作台内部 ============ */
+add({ g: "B · 创作台内部", id: "B1", name: "顶栏 + 模式开关", code: "StudioView / CanvasModeSwitch · 36 行", st: "ok",
+  blocks: ["品牌 logo", "模型选择器弹层（分类 + 分辨率分段）", "撤销 / 重做", "模式开关", "主题切换器", "导出下拉"],
+  spec: ["两种模式共用同一张画布，切的是交互契约不是两套实现",
+         "Ctrl+B 切换模式"],
+  r: () => `<div class="mini"><div class="m-bar" style="height:34px;gap:6px">
+      <div class="tl" style="width:20px;height:14px;border-radius:5px"></div>
+      <div class="pill" style="width:62px"></div><div class="sp"></div>
+      <div style="display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden">
+        <div style="padding:3px 9px;font-size:9.5px;background:var(--primary);color:#fff">无限画布</div>
+        <div style="padding:3px 9px;font-size:9.5px;color:var(--text-3)">批量节点</div></div>
+      <div class="pill" style="width:20px"></div><div class="pill" style="width:20px"></div>
+      <div style="width:16px;height:16px;border-radius:50%;background:var(--accent-grad,var(--primary))"></div>
+    </div>${main(`
+      <div class="ttl">无限画布模式</div>
+      <div class="mut">点节点 = 选中一个（清空其他）· 随手摆、随手连</div>
+      <div class="gap"></div>
+      <div class="ttl">批量节点模式</div>
+      <div class="mut">点节点 = 加选 · 顶部出批量条 · Ctrl+B</div>
+      <div class="row" style="margin-top:6px"><span class="chip">全选</span><span class="chip">反选</span>
+        <span class="chip">网格整理</span><span class="chip">运行选中</span><span class="chip">取消</span></div>`)}</div>` });
+
+add({ g: "B · 创作台内部", id: "B2", name: "画布 · 批量模式", code: "NodeCanvas.vue · 1886 行", st: "ok",
+  blocks: ["顶部批量条（全选 / 反选 / 网格整理 / 运行 / 取消）", "加选高亮", "串行执行进度", "节点网格"],
+  spec: ["点击加选必须用 pointerdown 捕获阶段快照：直接在 node-click 里 toggle 会拿到「已被 Vue Flow 改成 true」的状态，永远选不中",
+         "批量跑前弹一次总账确认，不逐行弹"],
+  r: () => `<div class="mini">
+    <div class="m-bar" style="gap:6px;background:var(--primary-soft)">
+      <div class="mut" style="color:var(--text-1);font-weight:600">批量模式 · 已选 6</div><div class="sp"></div>
+      <span class="chip">全选</span><span class="chip">反选</span><span class="chip">网格整理</span>
+      <span class="chip on">运行选中</span><span class="chip">取消</span></div>
+    <div class="m-body"><div class="m-main" style="padding:0;position:relative">
+      <div class="cv">
+        ${[0,1,2].map(r => [0,1,2].map(c => `<div class="nd ${r===0&&c<2?'done':(r===1&&c===0?'run':'')}"
+          style="left:${8+c*70}px;top:${10+r*52}px;width:60px">
+          <div class="nh" style="background:${r===0&&c<2?'var(--success)':(r===1&&c===0?'var(--info)':'var(--primary)')}"></div>
+          <div class="nl"></div></div>`).join("")).join("")}
+      </div>
+      <div style="border-top:1px solid var(--border);padding:5px 7px">
+        <div class="mut" style="margin-bottom:3px">第 3 / 6 条 · 预计 180 点</div>
+        <div style="height:3px;border-radius:2px;background:var(--surface-hover);overflow:hidden">
+          <div style="width:46%;height:100%;background:var(--primary)"></div></div></div>
+    </div></div></div>` });
+
+add({ g: "B · 创作台内部", id: "B3", name: "画布空态（可操作）", code: "EmptyCanvas.vue · 87 行", st: "ok",
+  blocks: ["上传卡片", "提示词输入框（Ctrl+Enter 直出）", "4 个示例流程"],
+  spec: ["不是一张插图，是可直接开工的空态",
+         "支持从系统文件管理器拖入"],
+  r: () => `<div class="mini">${bar(1)}<div class="m-body"><div class="m-main">
+      <div class="cen">
+        <div class="row"><div class="blk" style="padding:10px 14px;text-align:center">
+          <div style="font-size:14px;color:var(--text-3)">＋</div><div class="mut">上传图片</div></div></div>
+        <div class="blk" style="width:78%;padding:6px 8px"><div class="ln m"></div></div>
+        <div class="mut">Ctrl+Enter 直接开始</div>
+        <div class="row" style="margin-top:4px"><span class="chip">毛衫印花</span><span class="chip">模特换装</span></div>
+        <div class="row"><span class="chip">场景合成</span><span class="chip">细节重绘</span></div>
+      </div></div></div></div>` });
+
+add({ g: "B · 创作台内部", id: "B4", name: "右侧属性栏", code: "InspectorPanel.vue · 242 行", st: "ok",
+  blocks: ["无选中不渲染", "按节点类型给不同参数", "执行器状态与重跑", "作品组解散"],
+  spec: ["多选时只允许改提示词 —— 避免误改 20 个节点的画幅",
+         "产品图：角色 / 参考强度 / 印花区域 / 保留针织纹理"],
+  r: () => `<div class="mini"><div class="m-bar"><div class="tl"></div><div class="sp"></div>
+      <div class="pill" style="width:20px"></div></div>
+    <div class="m-body" style="justify-content:flex-end">
+      <div class="m-side" style="width:100%;background:var(--surface);padding:10px">
+        <div class="ttl" style="font-size:11px;margin-bottom:8px">产品图</div>
+        ${["画面描述","模型","画幅","张数"].map(k=>`<div style="margin-bottom:6px">
+          <div class="mut" style="margin-bottom:2px">${k}</div>
+          <div class="blk" style="padding:5px 7px"><div class="ln s"></div></div></div>`).join("")}
+        <div class="gap"></div>
+        <div class="row"><div class="btn-g" style="flex:1">重置</div><div class="btn-m" style="flex:1">应用</div></div>
+      </div></div></div>` });
+
+add({ g: "B · 创作台内部", id: "B5", name: "底部任务条", code: "TaskBar.vue · 81 行", st: "ok",
+  blocks: ["四态：running / done / error / canceled", "取消", "重做", "本次花费点数"],
+  spec: ["⚠ 前端取消已就绪，但服务端不会真停 GPU（缺口 G7，ComfyUI /interrupt 未接）"],
+  r: () => `<div class="mini">${bar(1)}${main(`
+      <div class="ttl" style="margin-bottom:2px">任务</div>
+      <div class="taskb"><div class="dg" style="background:var(--info)"></div><div class="tw" style="flex:1"></div>
+        <div class="mut">生成中</div><div class="mut">取消</div></div>
+      <div class="taskb"><div class="dg" style="background:var(--success)"></div><div class="tw"></div>
+        <div class="mut">完成 · 12 点</div><div class="mut">重做</div></div>
+      <div class="taskb"><div class="dg" style="background:var(--danger)"></div><div class="tw"></div>
+        <div class="mut" style="color:var(--danger)">失败</div><div class="mut">重做</div></div>
+      <div class="taskb" style="opacity:.6"><div class="dg" style="background:var(--text-4)"></div><div class="tw"></div>
+        <div class="mut">已取消</div><div class="mut">重做</div></div>
+      <div class="gap"></div>
+      <div class="mut">本轮合计 24 点</div>`)}</div>` });
+
+add({ g: "B · 创作台内部", id: "B6", name: "批量面板", code: "BatchDock.vue · 157 行", st: "ok",
+  blocks: ["多行提示词粘贴", "自动去序号 / 空行 / 去重", "铺成 N 组三元组", "一次总账确认", "串行执行可取消"],
+  spec: ["典型用法：从 Excel 复制 20 行卖点描述 → 铺 20 组 → 跑",
+         "中途取消时已出图保留"],
+  r: () => `<div class="mini"><div class="m-bar"><div class="tl" style="width:34px"></div><div class="sp"></div>
+      <div class="pill" style="width:18px"></div></div>
+    <div class="m-body" style="justify-content:flex-end">
+      <div class="m-side" style="width:100%;background:var(--surface);padding:10px">
+        <div class="mut" style="margin-bottom:4px">粘贴多行提示词（每行一条）</div>
+        <div class="blk" style="padding:6px 8px;margin-bottom:8px">
+          ${["圆领毛衫 圣诞印花","V领毛衫 几何条纹","高领毛衫 纯色"].map(t=>
+            `<div class="mut" style="color:var(--text-2);margin-bottom:2px">${t}</div>`).join("")}
+          <div class="ln s"></div></div>
+        <div class="row" style="justify-content:space-between;margin-bottom:8px">
+          <div class="mut">已解析 3 条</div><div class="mut">预计 36 点</div></div>
+        <div class="row"><div class="btn-g" style="flex:1">网格整理</div><div class="btn-m" style="flex:1">运行这批</div></div>
+      </div></div></div>` });
+
+add({ g: "B · 创作台内部", id: "B7", name: "左侧浮层（工具 + 预设）", code: "StudioView.vue", st: "ok",
+  blocks: ["节点工具 rail", "提示词预设（可搜索）"],
+  spec: ["预设支持搜索并加载到提示词节点"],
+  r: () => `<div class="mini">${bar(1)}<div class="m-body">
+      <div class="m-side" style="width:44px"><i style="background:var(--primary);opacity:.9"></i><i></i><i></i><i></i><i></i></div>
+      <div class="m-main"><div class="blk" style="padding:8px">
+        <div class="ttl" style="font-size:10px;margin-bottom:5px">提示词预设</div>
+        <div class="mut" style="margin-bottom:6px">搜索并加载提示词预设</div>
+        <div class="blk" style="padding:4px 6px;margin-bottom:5px"><div class="ln s"></div></div>
+        ${["毛衫印花","模特换装","场景合成"].map(t=>`<div class="mut" style="padding:3px 0;color:var(--text-2)">${t}</div>`).join("")}
+      </div><div class="gap"></div></div></div></div>` });
+
+add({ g: "B · 创作台内部", id: "B8", name: "素材库", code: "MaterialLibrary.vue · 116 行", st: "part",
+  blocks: ["分类折叠", "空文件夹提示", "上传"],
+  spec: ["⚠ 无删除、无打标签、无 SKU 绑定（缺口 G2 / 方案 E1，1 天）",
+         "建议标签体系：颜色 / 品类 / 季节 / SKU"],
+  r: () => `<div class="mini">${bar(1)}<div class="m-body" style="justify-content:flex-end">
+      <div class="m-side" style="width:100%;background:var(--surface);padding:10px">
+        <div class="row" style="justify-content:space-between;margin-bottom:8px">
+          <div class="ttl" style="font-size:11px">素材库</div><div class="mut">✕</div></div>
+        <div class="blk" style="padding:5px 7px;margin-bottom:6px"><div class="ln s"></div></div>
+        <div class="mut" style="margin-bottom:4px">▾ 毛衫（3）</div>
+        <div class="grid3" style="margin-bottom:6px"><div class="thumb g"></div><div class="thumb"></div><div class="thumb d"></div></div>
+        <div class="mut">▸ 模特（0）</div>
+        <div class="gap"></div>
+        <div class="mut" style="color:var(--warning)">⚠ 无删除 / 无标签 / 无 SKU</div>
+      </div></div></div>` });
+
+add({ g: "B · 创作台内部", id: "B9", name: "聊天抽屉", code: "ChatDrawer.vue · 81 行", st: "ok",
+  blocks: ["消息气泡", "输入框"],
+  spec: ["侧边抽屉形态，不打断画布操作"],
+  r: () => `<div class="mini">${bar(1)}<div class="m-body" style="justify-content:flex-end">
+      <div class="m-side" style="width:100%;background:var(--surface);padding:10px;gap:6px">
+        <div class="bub l">帮我换一个圣诞印花</div>
+        <div class="bub r">已调整提示词，可直接运行</div>
+        <div class="bub l">再来一版暖色调</div>
+        <div class="gap"></div>
+        <div class="blk" style="padding:5px 7px"><div class="ln m"></div></div>
+      </div></div></div>` });
+
+/* ============ C · 覆盖层 ============ */
+add({ g: "C · 覆盖层", id: "C1", name: "设置", code: "SettingsDialog.vue · 268 行", st: "ok",
+  blocks: ["模型 Keys", "万相图生图模型下拉", "明暗", "路径"],
+  spec: ["上轮新增：万相「图生图模型」下拉（t2i 系列不支持图片输入，带参考图时自动换模型）",
+         "即梦新增 5-0-lite / 4-5 选项"],
+  r: () => `<div class="mini" style="background:rgba(0,0,0,.28);justify-content:center;align-items:center">
+    <div class="blk" style="width:82%;padding:10px;box-shadow:var(--shadow-md)">
+      <div class="row" style="justify-content:space-between;margin-bottom:8px">
+        <div class="ttl" style="font-size:11px">设置</div><div class="mut">✕</div></div>
+      <div class="row" style="margin-bottom:7px"><span class="chip on">模型</span><span class="chip">外观</span><span class="chip">路径</span></div>
+      ${["万相 API Key","万相图生图模型","即梦 API Key","OpenAI Key"].map(k=>`<div style="margin-bottom:5px">
+        <div class="mut" style="margin-bottom:2px">${k}</div>
+        <div class="blk" style="padding:4px 6px"><div class="ln s"></div></div></div>`).join("")}
+      <div class="row" style="justify-content:flex-end;margin-top:8px">
+        <div class="btn-g" style="margin-right:6px">取消</div><div class="btn-m">保存</div></div>
+    </div></div>` });
+
+add({ g: "C · 覆盖层", id: "C2", name: "账户弹窗组（4 个）", code: "AccountModals.vue · 559 行", st: "ok",
+  blocks: ["充值", "消费明细", "团队", "微信绑定"],
+  spec: ["商业化主入口，4 个 dialog 共用一套样式",
+         "消费明细按笔列出点数与模型"],
+  r: () => `<div class="mini" style="background:rgba(0,0,0,.28);justify-content:center;align-items:center">
+    <div class="blk" style="width:86%;padding:10px;box-shadow:var(--shadow-md)">
+      <div class="ttl" style="font-size:11px;margin-bottom:8px">充值</div>
+      <div class="grid3" style="margin-bottom:8px">
+        ${["100 点","500 点","2000 点"].map((t,i)=>`<div class="stat" style="${i===1?'border-color:var(--primary);background:var(--primary-soft)':''}">
+          <b>${t}</b><span>¥${[9,39,139][i]}</span></div>`).join("")}</div>
+      <div class="row" style="gap:6px;margin-bottom:8px">
+        <div class="btn-g" style="flex:1">微信</div><div class="btn-g" style="flex:1">支付宝</div></div>
+      <div class="mut" style="margin-bottom:4px">消费明细</div>
+      ${["万相 · 4 张 · 12 点","即梦 · 2 张 · 8 点"].map(t=>
+        `<div class="taskb" style="margin-bottom:4px"><div class="dg" style="background:var(--success)"></div>
+         <div class="tw"></div><div class="mut">${t}</div></div>`).join("")}
+    </div></div>` });
+
+add({ g: "C · 覆盖层", id: "C3", name: "管理后台", code: "AdminConsole", st: "ok",
+  blocks: ["用户管理", "权限"],
+  spec: ["仅管理员可见"],
+  r: () => `<div class="mini">${bar(2)}${main(`
+      <div class="ttl" style="font-size:11px;margin-bottom:6px">用户管理</div>
+      ${["张三 · 管理员","李四 · 成员","王五 · 成员"].map(t=>
+        `<div class="taskb" style="margin-bottom:4px"><div class="dg" style="background:var(--success)"></div>
+         <div class="tw"></div><div class="mut">${t}</div></div>`).join("")}
+      <div class="gap"></div>
+      <div class="row"><span class="chip on">全部</span><span class="chip">管理员</span><span class="chip">已禁用</span></div>`)}</div>` });
+
+add({ g: "C · 覆盖层", id: "C4", name: "新手引导", code: "OnboardingTour.vue · 188 行", st: "ok",
+  blocks: ["分步气泡", "高亮聚焦"],
+  spec: ["首次进入触发，可跳过"],
+  r: () => `<div class="mini" style="background:rgba(0,0,0,.34)">
+    <div class="m-body"><div class="m-main" style="justify-content:center">
+      <div class="blk" style="padding:10px;box-shadow:var(--shadow-md);border-color:var(--primary)">
+        <div class="ttl" style="font-size:10.5px;margin-bottom:4px">第 2 / 5 步</div>
+        <div class="mut" style="color:var(--text-2);margin-bottom:7px">把左侧节点拖到画布上开始创作</div>
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <div class="mut">● ○ ○ ○ ○</div>
+          <div class="row"><div class="btn-g" style="margin-right:5px">跳过</div><div class="btn-m">下一步</div></div></div>
+      </div></div></div></div>` });
+
+add({ g: "C · 覆盖层", id: "C5", name: "更新提示", code: "UpdateToast.vue · 147 行", st: "ok",
+  blocks: ["版本说明", "立即更新 / 稍后"],
+  spec: ["Electron 自动更新通道"],
+  r: () => `<div class="mini">${bar(1)}${main(`
+      <div class="gap"></div>
+      <div class="blk" style="padding:8px 9px;border-color:var(--primary);box-shadow:var(--shadow-md)">
+        <div class="row" style="justify-content:space-between;margin-bottom:4px">
+          <div class="ttl" style="font-size:10.5px">发现新版本 v1.2.0</div><div class="mut">✕</div></div>
+        <div class="mut" style="margin-bottom:7px">新增批量节点模式 · 修复万相负向词失效</div>
+        <div class="row"><div class="btn-g" style="margin-right:6px">稍后</div><div class="btn-m">立即更新</div></div>
+      </div><div class="gap"></div>`)}</div>` });
+
+/* ============ D · 状态与缺口 ============ */
+add({ g: "D · 状态与缺口", id: "D1", name: "节点五态", code: "NodeCanvas", st: "ok",
+  blocks: ["idle / running / done / error / canceled"],
+  spec: ["错误态显示具体原因，不是一句「失败」",
+         "取消态保留已有结果"],
+  r: () => `<div class="mini">${bar(1)}<div class="m-body"><div class="m-main">
+      <div class="mut" style="margin-bottom:6px">节点状态</div>
+      ${[["idle","var(--text-4)","排队中"],["running","var(--info)","生成中 42%"],["done","var(--success)","已完成"],
+         ["error","var(--danger)","Key 无效"],["canceled","var(--text-4)","已取消"]].map((t,i)=>
+        `<div style="margin-bottom:7px"><div class="mut" style="margin-bottom:2px">${t[0]}</div>
+         <div class="taskb"><div class="dg" style="background:${t[1]}"></div>
+         <div class="tw" style="flex:1"></div><div class="mut">${t[2]}</div></div></div>`).join("")}
+    </div></div></div>` });
+
+add({ g: "D · 状态与缺口", id: "D2", name: "四套主题 × 明暗", code: "themes.css · 8 组 token", st: "ok",
+  blocks: ["极光玻璃", "画布工作室", "流光灵动", "经典蓝"],
+  spec: ["明暗与主题正交：切主题不动明暗，切明暗不动主题",
+         "都存 localStorage，关掉重开还是那套",
+         "⚠ --primary 一律写成 var(--brand)：有白标时按钮跟品牌走，没白标时跟主题走"],
+  r: () => `<div class="mini" style="padding:12px">
+    <div class="grid2" style="gap:9px;height:100%">
+      ${[["aurora","极光玻璃","#0B0D14","#6D5EF8"],["atelier","画布工作室","#FAF8F5","#FF5A1F"],
+         ["momentum","流光灵动","#FFFFFF","#4F46E5"],["classic","经典蓝","#0A1F3D","#2563EB"]].map(t=>
+        `<div style="background:${t[2]};border-radius:10px;padding:9px;border:1px solid var(--border)">
+          <div style="width:100%;height:16px;border-radius:5px;background:${t[3]};margin-bottom:6px"></div>
+          <div style="font-size:9.5px;color:${t[0]==='aurora'||t[0]==='classic'?'#fff':'#333'}">${t[1]}</div></div>`).join("")}
+    </div></div>` });
+
+add({ g: "D · 状态与缺口", id: "D3", name: "缺口：无骨架屏 / 无错误边界", code: "全局", st: "no",
+  blocks: ["❌ 零骨架屏", "❌ 零错误边界", "⚠ 项目页无空态", "⚠ 素材库无删除/标签"],
+  spec: ["全项目零 skeleton：加载只有安全记录一行「加载中…」，其余全部突然出现",
+         "零错误边界（无 onErrorCaptured / app.config.errorHandler）：任一组件抛错 = 白屏，用户只能重启",
+         "优先级建议：错误边界 > 服务端真取消 > 项目页空态 > 骨架屏 > 素材库 > 资产血缘 > 多图融合",
+         "理由：错误边界是唯一会让用户看到白屏的；服务端真取消是唯一会让用户多花钱的"],
+  r: () => `<div class="mini"><div class="m-body"><div class="m-main">
+      <div class="ttl" style="font-size:11px;margin-bottom:7px">G4 · 组件抛错</div>
+      <div class="blk" style="flex:1;display:flex;align-items:center;justify-content:center;
+           background:var(--bg);border-style:dashed">
+        <div class="mut" style="color:var(--danger)">白屏 · 无任何兜底</div></div>
+      <div class="ttl" style="font-size:11px;margin:7px 0">G3 · 加载中</div>
+      <div class="blk" style="padding:8px"><div class="ln m" style="opacity:1;background:var(--text-4)"></div></div>
+      <div class="mut">无骨架屏，内容直接闪现</div>
+    </div></div></div>` });
+
+/* ---------- 渲染 ---------- */
+const GROUPS = [...new Set(S.map((s) => s.g))];
+document.getElementById("groups").innerHTML = GROUPS.map((g) => {
+  const list = S.filter((s) => s.g === g);
+  return `<div class="group"><div class="group-head"><h2>${g}</h2>
+    <span class="cnt">${list.length} 个界面单元</span></div>
+    <div class="grid">${list.map((s) => {
+      const b = s.st === "ok" ? ["b-ok", "已落地"] : s.st === "part" ? ["b-part", "部分"] : ["b-no", "待补"];
+      return `<div class="card" data-id="${s.id}">${s.r()}
+        <div class="foot"><div class="frow">
+          <span class="fname">${s.name}</span><span class="badge ${b[0]}">${b[1]}</span></div>
+          <div class="fcode">${s.code}</div>
+          <div class="blocks">${s.blocks.join(" · ")}</div></div></div>`;
+    }).join("")}</div></div>`;
+}).join("");
+
+const ST = { ok: ["b-ok", "已落地"], part: ["b-part", "部分"], no: ["b-no", "待补"] };
+document.querySelectorAll(".card").forEach((el) => {
+  el.addEventListener("click", () => {
+    const s = S.find((x) => x.id === el.dataset.id);
+    document.getElementById("mt").textContent = `${s.id} · ${s.name}`;
+    const mb = document.getElementById("mb");
+    mb.className = "badge " + ST[s.st][0]; mb.textContent = ST[s.st][1];
+    document.getElementById("mbig").innerHTML = s.r();
+    document.getElementById("mspec").innerHTML =
+      `<div class="spec"><h4>规格与验收</h4><ul>${s.spec.map((x) => `<li>${x}</li>`).join("")}</ul>
+       <div class="kv"><b>区块</b><div>${s.blocks.join(" · ")}</div>
+       <b>代码</b><div>${s.code}</div></div></div>`;
+    document.getElementById("mask").classList.add("on");
+  });
+});
+const closeMask = () => document.getElementById("mask").classList.remove("on");
+document.getElementById("mc").addEventListener("click", closeMask);
+document.getElementById("mask").addEventListener("click", (e) => { if (e.target.id === "mask") closeMask(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeMask(); });
+
+/* ---------- 主题切换 ---------- */
+const root = document.documentElement;
+let cur = localStorage.getItem("pv-theme") || "aurora";
+let dark = localStorage.getItem("pv-dark") !== "0";
+
+document.getElementById("themes").innerHTML = THEMES.map((t) =>
+  `<button data-t="${t.id}"><span class="dot3">${t.sw.map((c) =>
+    `<i style="background:${c}"></i>`).join("")}</span>${t.name}</button>`).join("");
+
+function paint() {
+  root.setAttribute("data-theme", cur);
+  root.classList.toggle("dark", dark);
+  document.querySelectorAll("#themes button").forEach((b) =>
+    b.classList.toggle("on", b.dataset.t === cur));
+  localStorage.setItem("pv-theme", cur);
+  localStorage.setItem("pv-dark", dark ? "1" : "0");
+}
+document.getElementById("themes").addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  cur = b.dataset.t;
+  const t = THEMES.find((x) => x.id === cur);
+  dark = t.dark;              // 切主题时落到该主题的默认明暗
+  paint();
+});
+document.getElementById("dark").addEventListener("click", () => { dark = !dark; paint(); });
+if (localStorage.getItem("pv-theme")) {
+  dark = localStorage.getItem("pv-dark") !== "0";
+} else {
+  dark = true;
+}
+paint();
+</script>
+</body>
+</html>

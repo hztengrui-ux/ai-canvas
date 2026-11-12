@@ -1,0 +1,107 @@
+{
+  "_comment": "模板内置定义。改这里改的是「出厂默认」；运营的实际改动会覆盖到 ~/.ai-canvas/templates.json，升级不丢。preview 指向 16:9 示意图（对应 LOOM42 那种「输入→输出」整图），图不存在时前端回退渐变占位。",
+  "templates": [
+    {
+      "id": "ai-studio",
+      "name": "AI 虚拟影棚",
+      "desc": "组合产品、模特与场景，生成商业影棚图。",
+      "category": "model",
+      "workflow": "clothes-model",
+      "preview": "/templates/ai-studio.webp",
+      "badge": "热门",
+      "order": 1
+    },
+    {
+      "id": "hot-replicate",
+      "name": "爆款复刻",
+      "desc": "复刻爆款风格，批量生成同款新图。",
+      "category": "model",
+      "workflow": "style-reference",
+      "preview": "/templates/hot-replicate.webp",
+      "badge": "NEW",
+      "order": 2
+    },
+    {
+      "id": "detail-page",
+      "name": "详情页制作",
+      "desc": "提炼卖点，生成整套详情页。",
+      "category": "detail",
+      "workflow": "detail-page",
+      "preview": "/templates/detail-page.webp",
+      "order": 3
+    },
+    {
+      "id": "use-template",
+      "name": "使用模板",
+      "desc": "复用成熟版式，让同一产品快速产出成套图片。",
+      "category": "product",
+      "workflow": "image-replica",
+      "preview": "/templates/use-template.webp",
+      "order": 4
+    },
+
+    {
+      "id": "pose-split",
+      "name": "姿势裂变",
+      "desc": "一张模特图裂变出多种姿势，丰富主图选择。",
+      "category": "model",
+      "workflow": "clothes-model-pose",
+      "preview": "/templates/pose-split.webp",
+      "order": 11
+    },
+    {
+      "id": "fixed-face",
+      "name": "固定脸型换背景",
+      "desc": "锁定模特长相，只替换背景与姿势。",
+      "category": "model",
+      "workflow": "fixed-face-bg-pose",
+      "preview": "/templates/fixed-face.webp",
+      "order": 12
+    },
+    {
+      "id": "scene-shot",
+      "name": "自定义场景",
+      "desc": "指定场景氛围，把商品自然放进画面。",
+      "category": "scene",
+      "workflow": "custom-scene",
+      "preview": "/templates/scene-shot.webp",
+      "order": 21
+    },
+    {
+      "id": "white-bg",
+      "name": "智能白底图",
+      "desc": "一键抠图去背，生成平台合规白底图。",
+      "category": "product",
+      "workflow": "smart-generation",
+      "preview": "/templates/white-bg.webp",
+      "order": 22
+    },
+    {
+      "id": "text-to-image",
+      "name": "文生图",
+      "desc": "用文字描述直接生成画面。",
+      "category": "scene",
+      "workflow": "image-generate",
+      "preview": "/templates/text-to-image.webp",
+      "order": 23
+    },
+    {
+      "id": "ai-video",
+      "name": "图片转视频",
+      "desc": "静态商品图转成短视频，用于千川与详情页。",
+      "category": "video",
+      "workflow": "ai-video",
+      "preview": "/templates/ai-video.webp",
+      "order": 31
+    },
+    {
+      "id": "video-replica",
+      "name": "爆款视频复刻",
+      "desc": "参考爆款视频节奏，复刻成自己的。",
+      "category": "video",
+      "workflow": "ai-video-replica",
+      "preview": "/templates/video-replica.webp",
+      "order": 32
+    }
+  ]
+}

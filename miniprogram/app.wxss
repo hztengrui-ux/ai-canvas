@@ -1,0 +1,452 @@
+/* ==========================================================================
+   跨多多 AI 创作台 · 手机端全局样式
+   视觉基准：桌面端「棱镜 Prism」
+     底 #ECEFF9 · 卡片 #FFFFFF · 墨黑 #15171E · 柠檬绿 #D8FA34（主按钮底 + 墨黑字）
+     钴蓝 #4361EE · 正文 #5A6274 · 次要 #838CA0 · 边框 #E5E9F4 · 圆角 24rpx 起
+   原则：白色卡片浮在雾霭蓝紫底上，柠檬绿只给主 CTA 与「当前项」，
+   钴蓝只给链接/信息强调；阴影很淡，不要硬边。
+   ========================================================================== */
+
+page {
+  background-color: #ECEFF9;
+  color: #15171E;
+  font-size: 28rpx;
+  line-height: 1.5;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+view,
+text,
+input,
+textarea,
+button,
+image {
+  box-sizing: border-box;
+}
+
+button {
+  margin: 0;
+  padding: 0;
+  background-color: transparent;
+  font-size: 28rpx;
+  line-height: normal;
+}
+
+button::after {
+  border: none;
+}
+
+/* ---------- 页面容器：满幅雾霭底 + 两团很淡的环境光 ---------- */
+.page {
+  min-height: 100vh;
+  padding: 32rpx 28rpx 56rpx;
+  background-color: #ECEFF9;
+  background-image:
+    radial-gradient(620rpx 340rpx at 4% -10%, #E2EAFF 0%, rgba(226, 234, 255, 0) 70%),
+    radial-gradient(560rpx 320rpx at 104% -6%, #E8F1FB 0%, rgba(232, 241, 251, 0) 66%);
+  background-repeat: no-repeat;
+}
+
+.page-with-bar {
+  padding-bottom: 200rpx;
+  padding-bottom: calc(200rpx + env(safe-area-inset-bottom));
+}
+
+/* ---------- 排版 ---------- */
+.h1 {
+  font-size: 44rpx;
+  font-weight: 600;
+  letter-spacing: -0.5rpx;
+  color: #15171E;
+}
+
+.h2 {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #15171E;
+}
+
+.h3 {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #15171E;
+}
+
+.ink {
+  color: #15171E;
+}
+
+.sub {
+  color: #5A6274;
+}
+
+.muted {
+  color: #838CA0;
+}
+
+.brand-text {
+  color: #4361EE;
+}
+
+.danger-text {
+  color: #E0553F;
+}
+
+.success-text {
+  color: #2E9E6B;
+}
+
+.tiny {
+  font-size: 22rpx;
+  line-height: 1.45;
+}
+
+.small {
+  font-size: 24rpx;
+}
+
+.strong {
+  font-weight: 600;
+}
+
+.center {
+  text-align: center;
+}
+
+.ellipsis {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ellipsis-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+/* ---------- 栅格与间距 ---------- */
+.row {
+  display: flex;
+  align-items: center;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+}
+
+.between {
+  justify-content: space-between;
+}
+
+.wrap {
+  flex-wrap: wrap;
+}
+
+.center-x {
+  justify-content: center;
+}
+
+.flex-1 {
+  flex: 1;
+  min-width: 0;
+}
+
+.mt-4 {
+  margin-top: 4rpx;
+}
+
+.mt-8 {
+  margin-top: 8rpx;
+}
+
+.mt-12 {
+  margin-top: 12rpx;
+}
+
+.mt-16 {
+  margin-top: 16rpx;
+}
+
+.mt-24 {
+  margin-top: 24rpx;
+}
+
+.mt-32 {
+  margin-top: 32rpx;
+}
+
+.ml-8 {
+  margin-left: 8rpx;
+}
+
+.ml-12 {
+  margin-left: 12rpx;
+}
+
+.ml-16 {
+  margin-left: 16rpx;
+}
+
+.ml-24 {
+  margin-left: 24rpx;
+}
+
+/* ---------- 卡片：白面 + 大圆角 + 环境光阴影 ---------- */
+.card {
+  background-color: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 28rpx;
+  box-shadow: 0 2rpx 8rpx rgba(21, 23, 30, 0.04), 0 24rpx 48rpx -28rpx rgba(21, 23, 30, 0.35);
+}
+
+.card-dark {
+  background-color: #15171E;
+  border-radius: 32rpx;
+  padding: 32rpx;
+  color: #F6F8FD;
+  box-shadow: 0 16rpx 40rpx -24rpx rgba(21, 23, 30, 0.8);
+}
+
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 36rpx 4rpx 18rpx;
+}
+
+.section-line {
+  margin-bottom: 8rpx;
+}
+
+.divider {
+  height: 1rpx;
+  background-color: #E5E9F4;
+}
+
+/* ---------- 按钮：主 CTA 柠檬绿渐变 + 墨黑字（绝不用白字） ---------- */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 92rpx;
+  padding: 0 40rpx;
+  border-radius: 999rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  line-height: 1;
+  border: none;
+}
+
+.btn-primary {
+  background-image: linear-gradient(135deg, #EBFF7A 0%, #D8FA34 46%, #BCE600 100%);
+  color: #181A0C;
+  box-shadow: 0 12rpx 28rpx -16rpx rgba(188, 230, 0, 0.9);
+}
+
+.btn-ghost {
+  background-color: #FFFFFF;
+  color: #15171E;
+  border: 1rpx solid #E5E9F4;
+}
+
+.btn-ink {
+  background-color: #15171E;
+  color: #FFFFFF;
+}
+
+.btn-danger {
+  background-color: #FFFFFF;
+  color: #E0553F;
+  border: 1rpx solid #F3D3CD;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-sm {
+  height: 68rpx;
+  padding: 0 28rpx;
+  font-size: 26rpx;
+}
+
+.is-busy {
+  opacity: 0.55;
+}
+
+/* ---------- 胶囊 / 标签 ---------- */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.chip {
+  padding: 14rpx 26rpx;
+  margin: 0 16rpx 16rpx 0;
+  border-radius: 999rpx;
+  background-color: #F4F6FC;
+  border: 1rpx solid #E5E9F4;
+  color: #5A6274;
+  font-size: 26rpx;
+}
+
+.chip.on {
+  background-color: #D8FA34;
+  border-color: #D8FA34;
+  color: #181A0C;
+  font-weight: 600;
+}
+
+.chip.off {
+  opacity: 0.45;
+}
+
+.chip-sm {
+  padding: 10rpx 22rpx;
+  margin: 0 14rpx 14rpx 0;
+  font-size: 24rpx;
+  line-height: 1.3;
+}
+
+.chip-count {
+  margin-left: 8rpx;
+  font-size: 20rpx;
+  opacity: 0.62;
+}
+
+.chip.on .chip-count {
+  opacity: 0.78;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx 16rpx;
+  margin: 0 12rpx 8rpx 0;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  background-color: #F4F6FC;
+  color: #5A6274;
+}
+
+.tag-brand {
+  background-color: rgba(67, 97, 238, 0.1);
+  color: #4361EE;
+}
+
+.tag-lime {
+  background-color: rgba(216, 250, 52, 0.35);
+  color: #181A0C;
+}
+
+.tag-ink {
+  background-color: #15171E;
+  color: #D8FA34;
+}
+
+/* ---------- 表单 ---------- */
+.field {
+  margin-bottom: 24rpx;
+}
+
+.field-label {
+  margin-bottom: 12rpx;
+  font-size: 24rpx;
+  color: #838CA0;
+}
+
+.input {
+  width: 100%;
+  height: 88rpx;
+  padding: 0 24rpx;
+  border-radius: 16rpx;
+  background-color: #F4F6FC;
+  border: 1rpx solid #E5E9F4;
+  font-size: 28rpx;
+  color: #15171E;
+}
+
+.input-ph {
+  color: #A6ADBD;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 200rpx;
+  padding: 20rpx 24rpx;
+  border-radius: 16rpx;
+  background-color: #F4F6FC;
+  border: 1rpx solid #E5E9F4;
+  font-size: 28rpx;
+  color: #15171E;
+  line-height: 1.6;
+}
+
+/* ---------- 进度条 ---------- */
+.bar {
+  position: relative;
+  height: 16rpx;
+  border-radius: 999rpx;
+  background-color: #EEF1F9;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 999rpx;
+  background-image: linear-gradient(90deg, #EBFF7A 0%, #D8FA34 55%, #BCE600 100%);
+  transition: width 300ms ease;
+}
+
+.bar-fill-full {
+  width: 100%;
+}
+
+.bar-sweep {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 38%;
+  height: 100%;
+  border-radius: 999rpx;
+  background-image: linear-gradient(90deg, rgba(216, 250, 52, 0) 0%, #D8FA34 50%, rgba(216, 250, 52, 0) 100%);
+  animation: bar-sweep 1.5s ease-in-out infinite;
+}
+
+@keyframes bar-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+/* ---------- 空状态 ---------- */
+.empty {
+  padding: 52rpx 0;
+  text-align: center;
+  color: #838CA0;
+  font-size: 26rpx;
+}
+
+/* ---------- 固定底栏（出图页） ---------- */
+.bottom-bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  padding: 20rpx 28rpx;
+  padding-bottom: 20rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background-color: rgba(255, 255, 255, 0.96);
+  border-top: 1rpx solid #E5E9F4;
+}
